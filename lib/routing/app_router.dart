@@ -1,3 +1,5 @@
+import 'package:aitie_demo/features/home/home_screen.dart';
+import 'package:aitie_demo/features/products/product_screen.dart';
 import 'package:aitie_demo/features/splash/splash_screen.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:go_router/go_router.dart';
@@ -21,45 +23,43 @@ class AppRouter {
         },
       ),
 
-      //Home Screen Navigation
-      // StatefulShellRoute.indexedStack(
-      //   builder: (context, state, navigationShell) {
-      //     return SplashScreen(navigationShell: navigationShell);
-      //   },
-      //   branches: [
-      //     StatefulShellBranch(
-      //       routes: [
-      //         GoRoute(
-      //           path: RouteNames.product,
-      //           name: RouteNames.product,
-      //           builder: (context, state) => SplashScreen(),
-      //         ),
-      //       ],
-      //     ),
-      //     StatefulShellBranch(
-      //       routes: [
-      //         GoRoute(
-      //           path: RouteNames.favorites,
-      //           name: RouteNames.favorites,
-      //           builder: (context, state) {
-      //             return SplashScreen();
-      //           },
-      //         ),
-      //       ],
-      //     ),
-      //     StatefulShellBranch(
-      //       routes: [
-      //         GoRoute(
-      //           path: RouteNames.cart,
-      //           name: RouteNames.cart,
-      //           builder: (context, state) => SplashScreen(),
-      //         ),
-      //       ],
-      //     ),
-      //   ],
-      // ),
-   
-   
+      // Home Screen Navigation
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return HomeScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.product,
+                name: RouteNames.product,
+                builder: (context, state) => ProductScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.favorites,
+                name: RouteNames.favorites,
+                builder: (context, state) {
+                  return SplashScreen();
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.cart,
+                name: RouteNames.cart,
+                builder: (context, state) => SplashScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
     ],
   );
 }

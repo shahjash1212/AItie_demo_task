@@ -1,5 +1,6 @@
 import 'package:aitie_demo/utils/dio_interceptor.dart';
 import 'package:dio/dio.dart';
+
 class DioClient {
   static Dio? _dio;
 
@@ -32,7 +33,7 @@ class DioClient {
 
   static Future<dynamic> get(
     String uri, {
-    bool isAiUrl = false,
+
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
@@ -42,9 +43,7 @@ class DioClient {
         uri,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
-        options: (options ?? Options()).copyWith(
-          extra: {...?options?.extra, 'isAiUrl': isAiUrl},
-        ),
+        options: (options ?? Options()).copyWith(extra: {...?options?.extra}),
       );
       return response.data;
     } catch (_) {
@@ -54,7 +53,7 @@ class DioClient {
 
   static Future<dynamic> post(
     String uri, {
-    bool isAiUrl = false,
+
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
@@ -66,9 +65,7 @@ class DioClient {
         data: data,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
-        options: (options ?? Options()).copyWith(
-          extra: {...?options?.extra, 'isAiUrl': isAiUrl},
-        ),
+        options: (options ?? Options()).copyWith(extra: {...?options?.extra}),
       );
       return response.data;
     } catch (_) {

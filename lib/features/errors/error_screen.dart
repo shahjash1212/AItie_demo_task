@@ -1,5 +1,4 @@
-import 'package:aitie_demo/constants/app_common_widgets.dart';
-import 'package:aitie_demo/constants/app_styles.dart';
+import 'package:aitie_demo/constants/app_buttons.dart';
 import 'package:aitie_demo/constants/gap.dart';
 import 'package:flutter/material.dart';
 
@@ -30,19 +29,11 @@ class ErrorScreen extends StatelessWidget {
                   color: Colors.red.shade400,
                 ),
                 const GapH(16),
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: AppStyles.kGilroyBold.copyWith(fontSize: 18),
-                ),
+                Text(message, textAlign: TextAlign.center),
                 const GapH(24),
                 SizedBox(
                   width: 150,
-                  child: AppTextButton(
-                    onTap: () async {},
-                    text: 'Retry',
-                    isDark: true,
-                  ),
+                  child: AppButtonBorder(onTap: () {}, text: 'Retry'),
                 ),
               ],
             ),

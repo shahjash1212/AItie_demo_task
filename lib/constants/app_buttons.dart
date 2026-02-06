@@ -1,6 +1,5 @@
 import 'package:aitie_demo/constants/app_colors.dart';
 import 'package:aitie_demo/constants/app_common_widgets.dart';
-import 'package:aitie_demo/constants/app_styles.dart';
 import 'package:flutter/material.dart';
 
 class AppButtonBorder extends StatelessWidget {
@@ -33,12 +32,12 @@ class AppButtonBorder extends StatelessWidget {
 
         width: double.maxFinite,
         decoration: BoxDecoration(
-          color: AppColor.kFFFFFF,
-          border: Border.all(color: AppColor.k0D0D0D, width: 1.0),
+          color: AppColors.lightBackground,
+          border: Border.all(color: AppColors.darkBackground, width: 1.0),
         ),
         child: isLoading
-            ? AppLoader(color: AppColor.k0D0D0D, size: 16)
-            : Text(text, style: AppStyles.kGilroyBold),
+            ? AppLoader(color: AppColors.darkBackground, size: 16)
+            : Text(text),
       ),
     );
   }
