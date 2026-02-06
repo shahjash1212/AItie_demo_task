@@ -3,7 +3,14 @@ import 'package:aitie_demo/utils/api_result_class.dart';
 import 'package:aitie_demo/utils/dio_client.dart';
 import 'package:flutter/foundation.dart';
 
-class ProductService {
+abstract class ProductRemoteDataSource {
+  Future<ApiResult> getAllProducts();
+  Future<ApiResult> getProductDetails({required int productId});
+}
+
+
+class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
+  @override
   Future<ApiResult> getAllProducts() async {
     try {
       ApiResult result = await DioClient.get('');
@@ -14,7 +21,8 @@ class ProductService {
     }
   }
 
-  Future<ApiResult> getProductsDetails({required int productId}) async {
+  @override
+  Future<ApiResult> getProductDetails({required int productId}) async {
     try {
       ApiResult result = await DioClient.get('');
       return result;

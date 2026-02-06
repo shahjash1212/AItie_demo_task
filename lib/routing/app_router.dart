@@ -1,5 +1,5 @@
 import 'package:aitie_demo/features/home/home_screen.dart';
-import 'package:aitie_demo/features/products/product_screen.dart';
+import 'package:aitie_demo/features/products/presentation/pages/product_screen.dart';
 import 'package:aitie_demo/features/splash/splash_screen.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:go_router/go_router.dart';
