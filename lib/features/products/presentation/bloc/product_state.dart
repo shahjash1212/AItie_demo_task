@@ -26,13 +26,21 @@ class ProductsLoaded extends ProductState {
   final FormzStatus cartStatus;
   final FormzStatus favoriteProductStatus;
 
+  final String? searchQuery;
+  final String? selectedCategory;
+  final List<ProductResponse> filteredProducts;
+
   const ProductsLoaded({
     required this.products,
     this.favoriteProducts = const [],
     this.cartProducts = const [],
+    this.filteredProducts = const [],
     this.favoriteStatus = FormzStatus.pure,
     this.cartStatus = FormzStatus.pure,
     this.favoriteProductStatus = FormzStatus.pure,
+
+    this.searchQuery,
+    this.selectedCategory,
   });
 
   @override
@@ -43,23 +51,32 @@ class ProductsLoaded extends ProductState {
     favoriteProductStatus,
     favoriteProducts,
     cartStatus,
+    filteredProducts,
+    searchQuery,
+    selectedCategory,
   ];
 
   ProductsLoaded copyWith({
     List<ProductResponse>? products,
     List<ProductResponse>? favoriteProducts,
+    List<ProductResponse>? filteredProducts,
     List<ProductResponse>? cartProducts,
     FormzStatus? favoriteStatus,
     FormzStatus? cartStatus,
     FormzStatus? favoriteProductStatus,
+    String? searchQuery,
+    String? selectedCategory,
   }) {
     return ProductsLoaded(
       products: products ?? this.products,
       favoriteProducts: favoriteProducts ?? this.favoriteProducts,
+      filteredProducts: filteredProducts ?? this.filteredProducts,
       cartProducts: cartProducts ?? this.cartProducts,
       favoriteStatus: favoriteStatus ?? FormzStatus.initial,
       cartStatus: cartStatus ?? FormzStatus.initial,
       favoriteProductStatus: favoriteProductStatus ?? FormzStatus.initial,
+      searchQuery: searchQuery ?? this.searchQuery,
+      selectedCategory: selectedCategory ?? this.selectedCategory,
     );
   }
 }

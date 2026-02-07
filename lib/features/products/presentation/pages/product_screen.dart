@@ -1,9 +1,7 @@
 import 'package:aitie_demo/constants/app_common_widgets.dart';
-import 'package:aitie_demo/constants/app_network_image.dart';
-import 'package:aitie_demo/constants/gap.dart';
 import 'package:aitie_demo/features/cart/widgets/cart_icon_button.dart';
-import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
+import 'package:aitie_demo/features/products/presentation/pages/widgets/product_container_widget.dart';
 import 'package:aitie_demo/features/products/presentation/pages/widgets/product_error_widget.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:flutter/material.dart';
@@ -65,45 +63,237 @@ class _ProductScreenState extends State<ProductScreen> {
         builder: (context, state) {
           if (state is ProductLoading) {
             return const Center(child: AppLoader());
-          } else if (state is ProductsLoaded) {
+          } // Now create the UI with search and category filters
+          else if (state is ProductsLoaded) {
+            // Extract unique categories
+            final categories =
+                state.products
+                    .map((p) => p.category)
+                    .whereType<String>()
+                    .toSet()
+                    .toList()
+                  ..sort();
+
+            // Use filtered products or all products
+            final displayProducts =
+                state.filteredProducts.isEmpty &&
+                    state.searchQuery == null &&
+                    state.selectedCategory == null
+                ? state.products
+                : state.filteredProducts;
+
             return AppRefreshIndecator(
               onRefresh: () async {
                 context.read<ProductBloc>().add(RefreshProductsEvent());
               },
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  int crossAxisCount;
-                  double childAspectRatio;
-
-                  if (constraints.maxWidth >= 1200) {
-                    crossAxisCount = 4; // Large tablets/desktop
-                    childAspectRatio = 0.65;
-                  } else if (constraints.maxWidth >= 800) {
-                    crossAxisCount = 3; // Tablets
-                    childAspectRatio = 0.7;
-                  } else if (constraints.maxWidth >= 600) {
-                    crossAxisCount = 2; // Large phones/small tablets
-                    childAspectRatio = 0.7;
-                  } else {
-                    crossAxisCount = 2; // Phones
-                    childAspectRatio = 0.68;
-                  }
-
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      childAspectRatio: childAspectRatio,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
+              child: Column(
+                children: [
+                  // Search Bar
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: TextField(
+                      onChanged: (value) {
+                        context.read<ProductBloc>().add(
+                          SearchProducts(query: value),
+                        );
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search products...',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: state.searchQuery != null
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  context.read<ProductBloc>().add(
+                                    ClearFilters(),
+                                  );
+                                },
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).cardColor,
+                      ),
                     ),
-                    itemCount: state.products.length,
-                    itemBuilder: (context, index) {
-                      final product = state.products[index];
-                      return ProductContainer(product: product);
-                    },
-                  );
-                },
+                  ),
+
+                  // Category Filter Chips
+                  if (categories.isNotEmpty)
+                    SizedBox(
+                      height: 50,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(
+                                'All',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
+                                ),
+                              ),
+                              selected: state.selectedCategory == null,
+                              onSelected: (selected) {
+                                if (selected) {
+                                  context.read<ProductBloc>().add(
+                                    const FilterByCategory(category: null),
+                                  );
+                                }
+                              },
+                              selectedColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                              labelStyle: TextStyle(
+                                color: state.selectedCategory == null
+                                    ? Theme.of(context).colorScheme.onSecondary
+                                    : null,
+                              ),
+                            ),
+                          ),
+                          ...categories.map(
+                            (category) => Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(
+                                  category[0].toUpperCase() +
+                                      category.substring(1),
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                                ),
+                                selected: state.selectedCategory == category,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    context.read<ProductBloc>().add(
+                                      FilterByCategory(category: category),
+                                    );
+                                  }
+                                },
+                                selectedColor: Theme.of(
+                                  context,
+                                ).colorScheme.surface,
+                                labelStyle: TextStyle(
+                                  color: state.selectedCategory == category
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (state.searchQuery != null ||
+                      state.selectedCategory != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${displayProducts.length} products found',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                          if (state.searchQuery != null ||
+                              state.selectedCategory != null)
+                            TextButton.icon(
+                              onPressed: () {
+                                context.read<ProductBloc>().add(ClearFilters());
+                              },
+                              icon: const Icon(Icons.clear_all, size: 18),
+                              label: const Text('Clear filters'),
+                            ),
+                        ],
+                      ),
+                    ),
+
+                  // Product Grid
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        int crossAxisCount;
+                        double childAspectRatio;
+
+                        if (constraints.maxWidth >= 1200) {
+                          crossAxisCount = 4;
+                          childAspectRatio = 0.65;
+                        } else if (constraints.maxWidth >= 800) {
+                          crossAxisCount = 3;
+                          childAspectRatio = 0.7;
+                        } else if (constraints.maxWidth >= 600) {
+                          crossAxisCount = 2;
+                          childAspectRatio = 0.7;
+                        } else {
+                          crossAxisCount = 2;
+                          childAspectRatio = 0.68;
+                        }
+
+                        // Empty state
+                        if (displayProducts.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No products found',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextButton(
+                                  onPressed: () {
+                                    context.read<ProductBloc>().add(
+                                      ClearFilters(),
+                                    );
+                                  },
+                                  child: const Text('Clear filters'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return GridView.builder(
+                          padding: const EdgeInsets.all(8.0),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                childAspectRatio: childAspectRatio,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                              ),
+                          itemCount: displayProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = displayProducts[index];
+                            return ProductContainer(product: product);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             );
           } else if (state is ProductError) {
@@ -112,112 +302,6 @@ class _ProductScreenState extends State<ProductScreen> {
           return const Column();
         },
       ),
-    );
-  }
-}
-
-class ProductContainer extends StatelessWidget {
-  const ProductContainer({super.key, required this.product});
-
-  final ProductResponse product;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      child: InkWell(
-        onTap: () async {
-          await precacheImage(NetworkImage(product.image ?? ''), context);
-          if (context.mounted) {
-            GoRouter.of(
-              context,
-            ).pushNamed(RouteNames.productDetail, extra: product);
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 30,
-                child: Hero(
-                  tag: 'product_${product.id}${product.image}',
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: AppNetworkImage(
-                      imageUrl: product.image ?? '',
-                      size: 65,
-                    ),
-                  ),
-                ),
-              ),
-              GapH(8),
-              Expanded(
-                flex: 25,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Title
-                    Text(
-                      product.title ?? 'No Title',
-
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const GapH(4),
-                    // Rating
-                    if (product.rating != null)
-                      Row(
-                        children: [
-                          _buildStarRating(product.rating!.rate ?? 0),
-                          const SizedBox(width: 4),
-                          Text(
-                            '(${product.rating!.count ?? 0})',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    const GapH(4),
-                    // Price
-                    Text(
-                      '\$${product.price?.toStringAsFixed(2) ?? '0.00'}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStarRating(num rating) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) {
-        if (index < rating.floor()) {
-          // Full star
-          return const Icon(Icons.star, size: 16, color: Colors.amber);
-        } else if (index < rating) {
-          // Half star
-          return const Icon(Icons.star_half, size: 16, color: Colors.amber);
-        } else {
-          // Empty star
-          return Icon(Icons.star_border, size: 16, color: Colors.grey[400]);
-        }
-      }),
     );
   }
 }

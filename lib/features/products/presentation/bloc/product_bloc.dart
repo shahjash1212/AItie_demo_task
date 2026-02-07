@@ -26,6 +26,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ClearCart>(_clearCart);
     on<ClearDatabaseEvent>(_clearDatabase);
     on<RefreshProductsEvent>(_refreshProducts);
+
+    on<SearchProducts>(_onSearchProducts);
+    on<FilterByCategory>(_onFilterByCategory);
+    on<ClearFilters>(_onClearFilters);
   }
 
   Future<void> _onLoadProducts(
@@ -38,7 +42,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       final localProducts = await localDbService.getAllProducts();
 
       if (localProducts.isNotEmpty) {
-        emit(ProductsLoaded(products: localProducts));
+        emit(
+          ProductsLoaded(
+            products: localProducts,
+            filteredProducts: localProducts,
+          ),
+        );
 
         add(GetAllFavoriteProducts());
         add(GetCartProducts());
@@ -49,7 +58,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
       if (result is RepoSuccess) {
         await localDbService.saveProducts(result.data);
-        emit(ProductsLoaded(products: result.data));
+        emit(
+          ProductsLoaded(products: result.data, filteredProducts: result.data),
+        );
       } else if (result is RepoFailure) {
         emit(
           ProductError(
@@ -331,5 +342,92 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     } catch (e) {
       emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
     }
+  }
+
+  Future<void> _onSearchProducts(
+    SearchProducts event,
+    Emitter<ProductState> emit,
+  ) async {
+    if (state is! ProductsLoaded) return;
+
+    final currentState = state as ProductsLoaded;
+    final query = event.query.toLowerCase().trim();
+
+    List<ProductResponse> filtered = currentState.products;
+
+    if (currentState.selectedCategory != null) {
+      filtered = filtered
+          .where((product) => product.category == currentState.selectedCategory)
+          .toList();
+    }
+
+    if (query.isNotEmpty) {
+      filtered = filtered
+          .where(
+            (product) => product.title?.toLowerCase().contains(query) ?? false,
+          )
+          .toList();
+    }
+
+    emit(
+      currentState.copyWith(
+        filteredProducts: filtered,
+        searchQuery: query.isEmpty ? null : query,
+      ),
+    );
+  }
+
+  Future<void> _onFilterByCategory(
+    FilterByCategory event,
+    Emitter<ProductState> emit,
+  ) async {
+    if (state is! ProductsLoaded) return;
+
+    final currentState = state as ProductsLoaded;
+    List<ProductResponse> filtered = currentState.products;
+
+    // Apply category filter
+    if (event.category != null) {
+      filtered = filtered
+          .where((product) => product.category == event.category)
+          .toList();
+    }
+
+    // Re-apply search query if exists
+    if (currentState.searchQuery != null &&
+        currentState.searchQuery!.isNotEmpty) {
+      filtered = filtered
+          .where(
+            (product) =>
+                product.title?.toLowerCase().contains(
+                  currentState.searchQuery!,
+                ) ??
+                false,
+          )
+          .toList();
+    }
+
+    emit(
+      currentState.copyWith(
+        filteredProducts: filtered,
+        selectedCategory: event.category,
+      ),
+    );
+  }
+
+  Future<void> _onClearFilters(
+    ClearFilters event,
+    Emitter<ProductState> emit,
+  ) async {
+    if (state is! ProductsLoaded) return;
+
+    final currentState = state as ProductsLoaded;
+    emit(
+      currentState.copyWith(
+        filteredProducts: currentState.products,
+        searchQuery: null,
+        selectedCategory: null,
+      ),
+    );
   }
 }

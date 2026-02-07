@@ -55,3 +55,21 @@ class ClearCart extends ProductEvent {
 class ClearDatabaseEvent extends ProductEvent {}
 
 class RefreshProductsEvent extends ProductEvent {}
+
+class SearchProducts extends ProductEvent {
+  final String query;
+  const SearchProducts({required this.query});
+
+  @override
+  List<Object?> get props => [query];
+}
+
+class FilterByCategory extends ProductEvent {
+  final String? category;
+  const FilterByCategory({this.category});
+
+  @override
+  List<Object?> get props => [category];
+}
+
+class ClearFilters extends ProductEvent {}

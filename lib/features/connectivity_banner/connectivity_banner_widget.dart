@@ -16,19 +16,15 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
   bool _isOffline = false;
   bool _showBanner = false;
   Timer? _timer;
-
-  // inside _ConnectivityBannerState
   @override
   void initState() {
     super.initState();
-    // 1. Check the status manually ONCE at start
     _checkInitialStatus();
 
     _subscription = Connectivity().onConnectivityChanged.listen(_updateStatus);
   }
 
   Future<void> _checkInitialStatus() async {
-    print('LISTENNINGNGNGGNGNGNGNGNGN --------------');
     final results = await Connectivity().checkConnectivity();
     _updateStatus(results);
   }
@@ -36,15 +32,12 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
   void _updateStatus(List<ConnectivityResult> results) {
     bool offline = results.contains(ConnectivityResult.none);
 
-    // Logic remains the same...
     setState(() {
       _isOffline = offline;
       if (offline) {
         _showBanner = true;
         _timer?.cancel();
       } else {
-        // If we were already online at startup, we don't need the 2s banner
-        // This check prevents a "Back Online" green flash every time you open the app
         if (_showBanner) {
           _timer = Timer(const Duration(seconds: 2), () {
             setState(() => _showBanner = false);
@@ -69,24 +62,18 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
         AnimatedPositioned(
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
-          top: _showBanner ? 0 : -100, // Slides from above the screen
+          top: _showBanner ? 80 : -100,
           left: 0,
           right: 0,
           child: Material(
             elevation: 4,
             child: Container(
-              padding: const EdgeInsets.only(
-                top: 40,
-                bottom: 10,
-              ), // Adjust for status bar
+              padding: const EdgeInsets.only(top: 5, bottom: 5),
               color: _isOffline ? Colors.red : Colors.green,
               alignment: Alignment.center,
               child: Text(
                 _isOffline ? "You are offline" : "Back online!",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
               ),
             ),
           ),

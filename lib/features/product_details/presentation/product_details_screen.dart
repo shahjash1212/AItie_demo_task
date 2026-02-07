@@ -83,7 +83,7 @@ class ProductDetailScreen extends StatelessWidget {
                     Row(
                       children: [
                         RatingStars(rate: product.rating!.rate ?? 0),
-                        const SizedBox(width: 8),
+                        const GapW(8),
                         Text(
                           '(${product.rating!.count})',
                           style: Theme.of(context).textTheme.bodySmall,
@@ -136,7 +136,7 @@ class ProductDetailScreen extends StatelessWidget {
                   children: [
                     if (isInCart) ...[
                       const Icon(Icons.shopping_cart_outlined, size: 18),
-                      const SizedBox(width: 8),
+                      const GapW(8),
                     ],
                     Text(isInCart ? 'Go to Cart' : 'Add to Cart'),
                   ],
@@ -154,8 +154,9 @@ class ProductDetailScreen extends StatelessWidget {
 
 class RatingStars extends StatelessWidget {
   final num rate;
+  final bool isSmall;
 
-  const RatingStars({super.key, required this.rate});
+  const RatingStars({super.key, required this.rate, this.isSmall = false});
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +165,7 @@ class RatingStars extends StatelessWidget {
         return Icon(
           index < rate.round() ? Icons.star : Icons.star_border,
           color: Colors.amber,
-          size: 20,
+          size: isSmall ? 11 : 20,
         );
       }),
     );
