@@ -1,3 +1,4 @@
+import 'package:aitie_demo/constants/api_end_point_or_path.dart';
 import 'package:aitie_demo/constants/api_status.dart';
 import 'package:aitie_demo/utils/api_result_class.dart';
 import 'package:aitie_demo/utils/dio_client.dart';
@@ -8,12 +9,11 @@ abstract class ProductRemoteDataSource {
   Future<ApiResult> getProductDetails({required int productId});
 }
 
-
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<ApiResult> getAllProducts() async {
     try {
-      ApiResult result = await DioClient.get('');
+      ApiResult result = await DioClient.get(ApiEndPoint.products);
       return result;
     } catch (e) {
       debugPrint(e.toString());

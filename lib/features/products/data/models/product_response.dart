@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
@@ -10,6 +11,7 @@ class ProductResponse extends Equatable {
   final String? category;
   final String? image;
   final Rating? rating;
+  final bool? isFavorite;
   const ProductResponse({
     this.id,
     this.title,
@@ -18,6 +20,7 @@ class ProductResponse extends Equatable {
     this.category,
     this.image,
     this.rating,
+    this.isFavorite,
   });
 
   ProductResponse copyWith({
@@ -28,6 +31,7 @@ class ProductResponse extends Equatable {
     String? category,
     String? image,
     Rating? rating,
+    bool? isFavorite,
   }) {
     return ProductResponse(
       id: id ?? this.id,
@@ -37,62 +41,51 @@ class ProductResponse extends Equatable {
       category: category ?? this.category,
       image: image ?? this.image,
       rating: rating ?? this.rating,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
   Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-
-    if (id != null) {
-      result.addAll({'id': id});
-    }
-    if (title != null) {
-      result.addAll({'title': title});
-    }
-    if (price != null) {
-      result.addAll({'price': price});
-    }
-    if (description != null) {
-      result.addAll({'description': description});
-    }
-    if (category != null) {
-      result.addAll({'category': category});
-    }
-    if (image != null) {
-      result.addAll({'image': image});
-    }
-    if (rating != null) {
-      result.addAll({'rating': rating!.toMap()});
-    }
-
-    return result;
+    return <String, dynamic>{
+      'id': id,
+      'title': title,
+      'price': price,
+      'description': description,
+      'category': category,
+      'image': image,
+      'rating': rating?.toMap(),
+      'isFavorite': isFavorite,
+    };
   }
 
   factory ProductResponse.fromMap(Map<String, dynamic> map) {
     return ProductResponse(
-      id: map['id']?.toInt(),
-      title: map['title'],
-      price: map['price'],
-      description: map['description'],
-      category: map['category'],
-      image: map['image'],
-      rating: map['rating'] != null ? Rating.fromMap(map['rating']) : null,
+      id: map['id'] != null ? map['id'] as int : null,
+      title: map['title'] != null ? map['title'] as String : null,
+      price: map['price'] != null ? map['price'] as num : null,
+      description: map['description'] != null
+          ? map['description'] as String
+          : null,
+      category: map['category'] != null ? map['category'] as String : null,
+      image: map['image'] != null ? map['image'] as String : null,
+      rating: map['rating'] != null
+          ? Rating.fromMap(map['rating'] as Map<String, dynamic>)
+          : null,
+      isFavorite: map['isFavorite'] != null ? map['isFavorite'] as bool : null,
     );
   }
 
   String toJson() => json.encode(toMap());
 
   factory ProductResponse.fromJson(String source) =>
-      ProductResponse.fromMap(json.decode(source));
+      ProductResponse.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() {
-    return 'ProductResponse(id: $id, title: $title, price: $price, description: $description, category: $category, image: $image, rating: $rating)';
-  }
+  bool get stringify => true;
 
   @override
   List<Object?> get props {
-    return [id, title, price, description, category, image, rating];
+    return [id, title, price, description, category, image, rating, isFavorite];
   }
 }
 

@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
               BottomNavItem(
                 index: 0,
                 selectedIndex: navigationShell.currentIndex,
-                label: 'Dashboard',
+                label: 'Products',
                 onTap: () => navigationShell.goBranch(0),
                 svgEnable: AppImages.favorite,
                 svgDisable: AppImages.favorite,
@@ -30,7 +30,7 @@ class HomeScreen extends StatelessWidget {
               BottomNavItem(
                 index: 1,
                 selectedIndex: navigationShell.currentIndex,
-                label: 'Spend',
+                label: 'Favorite',
                 onTap: () => navigationShell.goBranch(1),
                 svgEnable: AppImages.favorite,
                 svgDisable: AppImages.favorite,
@@ -38,7 +38,7 @@ class HomeScreen extends StatelessWidget {
               BottomNavItem(
                 index: 2,
                 selectedIndex: navigationShell.currentIndex,
-                label: 'Insights',
+                label: 'My Cart',
                 onTap: () => navigationShell.goBranch(2),
                 svgEnable: AppImages.favorite,
                 svgDisable: AppImages.favorite,

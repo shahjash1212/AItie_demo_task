@@ -30,10 +30,7 @@ class DioInterceptor {
           data = jsonDecode(data);
         }
         if (response.statusCode == ApiStatus.s200) {
-          response.data = ApiResult.success(
-            data: data['data'],
-            message: data.containsKey('message') ? data['message'] : null,
-          );
+          response.data = ApiResult.success(data: data, message: 'Success');
         } else {
           response.data = ApiResult.failure(
             errorMessage: data['message'] ?? '',

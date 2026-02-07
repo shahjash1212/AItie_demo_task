@@ -5,12 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'product_event.dart';
 import 'product_state.dart';
 
-/// Product BLoC - Handles business logic for Products feature
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final ProductRepository repository;
 
   ProductBloc({required this.repository}) : super(const ProductInitial()) {
-    // Register event handlers
     on<LoadProductsEvent>(_onLoadProducts);
     on<LoadProductDetailsEvent>(_onLoadProductDetails);
     on<RefreshProductsEvent>(_onRefreshProducts);

@@ -1,10 +1,13 @@
 import 'package:aitie_demo/constants/app_common_widgets.dart';
+import 'package:aitie_demo/constants/app_network_image.dart';
 import 'package:aitie_demo/constants/gap.dart';
 import 'package:aitie_demo/features/products/data/data_sources/product_remote_data_source.dart';
 import 'package:aitie_demo/features/products/data/repositories/product_repository_impl.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/bloc.dart';
+import 'package:aitie_demo/routing/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductScreen extends StatelessWidget {
   const ProductScreen({super.key});
@@ -44,12 +47,15 @@ class _ProductScreenContent extends StatelessWidget {
                   title: Text(product.title ?? 'No Title'),
                   subtitle: Text('\$${product.price}'),
                   leading: product.image != null
-                      ? Image.network(product.image!, width: 50, height: 50)
+                      ? Hero(
+                          tag: 'product_${product.id}',
+                          child: AppNetworkImage(imageUrl: product.image!),
+                        )
                       : null,
                   onTap: () {
-                    context.read<ProductBloc>().add(
-                      LoadProductDetailsEvent(productId: product.id ?? 0),
-                    );
+                    GoRouter.of(
+                      context,
+                    ).pushNamed(RouteNames.productDetail, extra: product);
                   },
                 );
               },

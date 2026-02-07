@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 class DioClient {
   static Dio? _dio;
 
-  static String normalBaseUrl = 'asdlkjfasldkfj';
+  static String normalBaseUrl = 'https://fakestoreapi.com';
 
   static Dio getClient() {
     if (_dio == null) {
