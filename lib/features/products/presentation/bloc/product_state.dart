@@ -8,7 +8,6 @@ sealed class ProductState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial state
 class ProductInitial extends ProductState {
   const ProductInitial();
 }
@@ -25,9 +24,10 @@ class ProductsLoaded extends ProductState {
   final FormzStatus favoriteStatus;
   final FormzStatus cartStatus;
   final FormzStatus favoriteProductStatus;
+  final FormzStatus clearFilterState;
 
   final String? searchQuery;
-  final String? selectedCategory;
+  final String selectedCategory;
   final List<ProductResponse> filteredProducts;
 
   const ProductsLoaded({
@@ -35,12 +35,13 @@ class ProductsLoaded extends ProductState {
     this.favoriteProducts = const [],
     this.cartProducts = const [],
     this.filteredProducts = const [],
-    this.favoriteStatus = FormzStatus.pure,
     this.cartStatus = FormzStatus.pure,
+    this.favoriteStatus = FormzStatus.pure,
+    this.clearFilterState = FormzStatus.pure,
     this.favoriteProductStatus = FormzStatus.pure,
 
     this.searchQuery,
-    this.selectedCategory,
+    this.selectedCategory = 'All',
   });
 
   @override
@@ -48,6 +49,7 @@ class ProductsLoaded extends ProductState {
     products,
     favoriteStatus,
     cartProducts,
+    clearFilterState,
     favoriteProductStatus,
     favoriteProducts,
     cartStatus,
@@ -62,6 +64,7 @@ class ProductsLoaded extends ProductState {
     List<ProductResponse>? filteredProducts,
     List<ProductResponse>? cartProducts,
     FormzStatus? favoriteStatus,
+    FormzStatus? clearFilterState,
     FormzStatus? cartStatus,
     FormzStatus? favoriteProductStatus,
     String? searchQuery,
@@ -74,8 +77,9 @@ class ProductsLoaded extends ProductState {
       cartProducts: cartProducts ?? this.cartProducts,
       favoriteStatus: favoriteStatus ?? FormzStatus.initial,
       cartStatus: cartStatus ?? FormzStatus.initial,
+      clearFilterState: clearFilterState ?? FormzStatus.initial,
       favoriteProductStatus: favoriteProductStatus ?? FormzStatus.initial,
-      searchQuery: searchQuery ?? this.searchQuery,
+      searchQuery: searchQuery ?? '',
       selectedCategory: selectedCategory ?? 'All',
     );
   }

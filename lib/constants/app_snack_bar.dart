@@ -8,16 +8,14 @@ void showErrorSnackBar(BuildContext context, String description) {
 
 SnackBar errorSnackBar({required String description}) {
   return SnackBar(
-    elevation: 0,
+    elevation: 5,
     behavior: SnackBarBehavior.floating,
     content: Container(
-      padding: EdgeInsets.all(10),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text(description)],
+        children: [Text(description, style: TextStyle(fontSize: 12))],
       ),
     ),
   );

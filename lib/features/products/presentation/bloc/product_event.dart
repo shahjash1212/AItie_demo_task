@@ -29,9 +29,23 @@ class AddToCart extends ProductEvent {
   List<Object?> get props => [productId];
 }
 
-class GetCartProducts extends ProductEvent {}
+class GetCartProducts extends ProductEvent {
+  final String? searchQuery;
+  final String? selectedCategory;
+  const GetCartProducts({this.searchQuery, this.selectedCategory});
 
-class GetAllFavoriteProducts extends ProductEvent {}
+  @override
+  List<Object?> get props => [searchQuery, selectedCategory];
+}
+
+class GetAllFavoriteProducts extends ProductEvent {
+  final String? searchQuery;
+  final String? selectedCategory;
+  const GetAllFavoriteProducts({this.searchQuery, this.selectedCategory});
+
+  @override
+  List<Object?> get props => [searchQuery, selectedCategory];
+}
 
 class RemoveFromCart extends ProductEvent {
   final int productId;
@@ -72,4 +86,14 @@ class FilterByCategory extends ProductEvent {
   List<Object?> get props => [category];
 }
 
-class ClearFilters extends ProductEvent {}
+class ClearFilters extends ProductEvent {
+  final bool isSearchQueryCleared;
+  final bool isCategoryCleared;
+  const ClearFilters({
+    this.isSearchQueryCleared = false,
+    this.isCategoryCleared = false,
+  });
+
+  @override
+  List<Object?> get props => [isSearchQueryCleared, isCategoryCleared];
+}

@@ -83,15 +83,94 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     RefreshProductsEvent event,
     Emitter<ProductState> emit,
   ) async {
+    // Preserve current state data before refreshing
+    final currentState = state is ProductsLoaded
+        ? state as ProductsLoaded
+        : null;
+    final String? previousSearchQuery = currentState?.searchQuery;
+    final String? previousSelectedCategory = currentState?.selectedCategory;
+
     emit(const ProductLoading());
 
     try {
       final result = await repository.getAllProducts();
 
       if (result is RepoSuccess) {
-        await localDbService.clearDatabase();
-        await localDbService.saveProducts(result.data);
-        emit(ProductsLoaded(products: result.data));
+        final localProducts = await localDbService.getAllProducts();
+
+        // Create a map of existing products by ID for quick lookup
+        final Map<int, ProductResponse> existingProductsMap = {
+          for (var product in localProducts) product.id!: product,
+        };
+
+        // Merge: Update existing products and add new ones
+        final List<ProductResponse> mergedProducts = [];
+        for (var newProduct in result.data) {
+          final existingProduct = existingProductsMap[newProduct.id];
+
+          if (existingProduct != null) {
+            // Product exists - update base data but preserve user data
+            mergedProducts.add(
+              newProduct.copyWith(
+                isFavorite: existingProduct.isFavorite,
+                isInCart: existingProduct.isInCart,
+                quantity: existingProduct.quantity,
+              ),
+            );
+          } else {
+            mergedProducts.add(newProduct);
+          }
+        }
+
+        await localDbService.saveProducts(mergedProducts);
+
+        // Apply previous filters if they existed
+        List<ProductResponse> filteredProducts = mergedProducts;
+
+        // Apply category filter
+        if (previousSelectedCategory != null &&
+            previousSelectedCategory != 'All') {
+          filteredProducts = filteredProducts
+              .where((product) => product.category == previousSelectedCategory)
+              .toList();
+        }
+
+        // Apply search filter
+        if (previousSearchQuery != null && previousSearchQuery.isNotEmpty) {
+          filteredProducts = filteredProducts
+              .where(
+                (product) =>
+                    product.title?.toLowerCase().contains(
+                      previousSearchQuery,
+                    ) ??
+                    false,
+              )
+              .toList();
+        }
+
+        add(
+          GetAllFavoriteProducts(
+            searchQuery: previousSearchQuery,
+            selectedCategory: previousSelectedCategory,
+          ),
+        );
+        add(
+          GetCartProducts(
+            searchQuery: previousSearchQuery,
+            selectedCategory: previousSelectedCategory,
+          ),
+        );
+
+        emit(
+          ProductsLoaded(
+            products: mergedProducts,
+            filteredProducts: filteredProducts,
+            searchQuery: previousSearchQuery,
+            selectedCategory: previousSelectedCategory ?? 'All',
+          ),
+        );
+
+        // Refresh favorite and cart lists
       } else if (result is RepoFailure) {
         emit(
           ProductError(
@@ -185,6 +264,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         (state as ProductsLoaded).copyWith(
           favoriteProducts: favoriteProducts,
           favoriteProductStatus: FormzStatus.success,
+          searchQuery: event.searchQuery,
+          selectedCategory: event.selectedCategory,
         ),
       );
     } catch (e) {
@@ -214,6 +295,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         (state as ProductsLoaded).copyWith(
           cartProducts: inCartProducts,
           cartStatus: FormzStatus.success,
+          searchQuery: event.searchQuery,
+          selectedCategory: event.selectedCategory,
         ),
       );
     } catch (e) {
@@ -348,19 +431,23 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     SearchProducts event,
     Emitter<ProductState> emit,
   ) async {
-    if (state is! ProductsLoaded) return;
+    if (state is! ProductsLoaded) {
+      return;
+    }
 
     final currentState = state as ProductsLoaded;
     final query = event.query.toLowerCase().trim();
 
     List<ProductResponse> filtered = currentState.products;
 
-    if (currentState.selectedCategory != null) {
+    /// Category filter
+    if (currentState.selectedCategory != 'All') {
       filtered = filtered
           .where((product) => product.category == currentState.selectedCategory)
           .toList();
     }
 
+    /// Search query filter
     if (query.isNotEmpty) {
       filtered = filtered
           .where(
@@ -372,6 +459,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(
       currentState.copyWith(
         filteredProducts: filtered,
+        selectedCategory: currentState.selectedCategory,
         searchQuery: query.isEmpty ? null : query,
       ),
     );
@@ -385,15 +473,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
     final currentState = state as ProductsLoaded;
     List<ProductResponse> filtered = currentState.products;
-
-    // Apply category filter
     if (event.category != null) {
       filtered = filtered
           .where((product) => product.category == event.category)
           .toList();
     }
 
-    // Re-apply search query if exists
     if (currentState.searchQuery != null &&
         currentState.searchQuery!.isNotEmpty) {
       filtered = filtered
@@ -410,6 +495,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(
       currentState.copyWith(
         filteredProducts: filtered,
+        searchQuery: currentState.searchQuery,
         selectedCategory: event.category,
       ),
     );
@@ -422,11 +508,35 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     if (state is! ProductsLoaded) return;
 
     final currentState = state as ProductsLoaded;
+    final String? newSearchQuery = event.isSearchQueryCleared
+        ? null
+        : currentState.searchQuery;
+    final String? newCategory = event.isCategoryCleared
+        ? null
+        : currentState.selectedCategory;
+
+    List<ProductResponse> filtered = currentState.products;
+    if (newCategory != null && newCategory != 'All') {
+      filtered = filtered
+          .where((product) => product.category == newCategory)
+          .toList();
+    }
+
+    if (newSearchQuery != null && newSearchQuery.isNotEmpty) {
+      filtered = filtered
+          .where(
+            (product) =>
+                product.title?.toLowerCase().contains(newSearchQuery) ?? false,
+          )
+          .toList();
+    }
+
     emit(
       currentState.copyWith(
-        filteredProducts: currentState.products,
-        searchQuery: null,
-        selectedCategory: null,
+        filteredProducts: filtered,
+        searchQuery: newSearchQuery,
+        selectedCategory: newCategory,
+        clearFilterState: FormzStatus.success,
       ),
     );
   }

@@ -68,12 +68,15 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
           child: Material(
             elevation: 4,
             child: Container(
-              padding: const EdgeInsets.only(top: 5, bottom: 5),
+              padding: EdgeInsets.zero,
               color: _isOffline ? Colors.red : Colors.green,
               alignment: Alignment.center,
               child: Text(
                 _isOffline ? "You are offline" : "Back online!",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 8),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 8,
+                ),
               ),
             ),
           ),
