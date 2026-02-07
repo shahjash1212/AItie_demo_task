@@ -6,20 +6,16 @@ class AppTheme {
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
 
-    /// Core colors
     primaryColor: AppColors.lightPrimary,
     scaffoldBackgroundColor: AppColors.lightBackground,
     canvasColor: AppColors.lightSurface,
 
-    /// Color scheme (VERY IMPORTANT)
     colorScheme: const ColorScheme.light(
       primary: AppColors.lightPrimary,
       secondary: AppColors.lightSecondary,
       error: AppColors.lightError,
       surface: AppColors.lightSurface,
     ),
-
-    /// AppBar
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.lightBackground,
       foregroundColor: AppColors.lightPrimary,
@@ -58,7 +54,38 @@ class AppTheme {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.lightSurface,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+
+      hintStyle: AppTextStyles.caption.copyWith(
+        color: AppColors.lightSecondary,
+      ),
+      labelStyle: AppTextStyles.body.copyWith(color: AppColors.lightPrimary),
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.lightSecondary),
+      ),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.lightSecondary),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.lightPrimary, width: 1.5),
+      ),
+
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.lightError),
+      ),
+
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.lightError, width: 1.5),
+      ),
     ),
 
     /// Date Picker (your original + completed)
@@ -83,6 +110,19 @@ class AppTheme {
     /// Bottom Sheet
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.lightSurface,
+    ),
+
+    chipTheme: ChipThemeData(
+      backgroundColor: AppColors.lightSurface,
+      selectedColor: AppColors.lightPrimary.withValues(alpha: .15),
+      disabledColor: AppColors.lightSecondary.withValues(alpha: 0.1),
+      labelStyle: AppTextStyles.body.copyWith(color: AppColors.lightPrimary),
+      secondaryLabelStyle: AppTextStyles.body.copyWith(color: Colors.white),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.lightPrimary, width: 0.8),
+      ),
     ),
   );
 
@@ -127,7 +167,38 @@ class AppTheme {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.darkSurface,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+
+      hintStyle: AppTextStyles.caption.copyWith(color: AppColors.darkSecondary),
+      labelStyle: AppTextStyles.body.copyWith(color: AppColors.darkPrimary),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.darkSecondary, width: .5),
+      ),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(
+          color: AppColors.darkSecondary,
+          width: 0.5,
+        ),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.darkPrimary, width: 0.5),
+      ),
+
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.darkError),
+      ),
+
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: AppColors.darkError, width: 1.5),
+      ),
     ),
 
     datePickerTheme: const DatePickerThemeData(
@@ -148,6 +219,19 @@ class AppTheme {
 
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.darkSurface,
+    ),
+
+    chipTheme: ChipThemeData(
+      backgroundColor: AppColors.darkSurface,
+      selectedColor: AppColors.darkPrimary.withValues(alpha: 0.25),
+      disabledColor: AppColors.darkSecondary.withValues(alpha: 0.15),
+      labelStyle: AppTextStyles.body.copyWith(color: AppColors.darkPrimary),
+      secondaryLabelStyle: AppTextStyles.body.copyWith(color: Colors.black),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.darkPrimary, width: 0.5),
+      ),
     ),
   );
 }

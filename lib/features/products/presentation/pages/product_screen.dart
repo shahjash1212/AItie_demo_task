@@ -88,109 +88,55 @@ class _ProductScreenState extends State<ProductScreen> {
               },
               child: Column(
                 children: [
-                  // Search Bar
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: TextField(
-                      onChanged: (value) {
-                        context.read<ProductBloc>().add(
-                          SearchProducts(query: value),
-                        );
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search products...',
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: state.searchQuery != null
-                            ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  context.read<ProductBloc>().add(
-                                    ClearFilters(),
-                                  );
-                                },
-                              )
-                            : null,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Theme.of(context).cardColor,
-                      ),
-                    ),
-                  ),
+                  ProductsSearchBar(),
 
-                  // Category Filter Chips
                   if (categories.isNotEmpty)
-                    SizedBox(
-                      height: 50,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(
-                                'All',
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.secondary,
-                                ),
-                              ),
-                              selected: state.selectedCategory == null,
-                              onSelected: (selected) {
-                                if (selected) {
+                    if (categories.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              // "All" chip
+                              _buildCategoryChip(
+                                context: context,
+                                label: 'All',
+                                isSelected: state.selectedCategory == null,
+                                onTap: () {
                                   context.read<ProductBloc>().add(
                                     const FilterByCategory(category: null),
                                   );
-                                }
-                              },
-                              selectedColor: Theme.of(
-                                context,
-                              ).colorScheme.primary,
-                              labelStyle: TextStyle(
-                                color: state.selectedCategory == null
-                                    ? Theme.of(context).colorScheme.onSecondary
-                                    : null,
+                                },
                               ),
-                            ),
-                          ),
-                          ...categories.map(
-                            (category) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: ChoiceChip(
-                                label: Text(
-                                  category[0].toUpperCase() +
-                                      category.substring(1),
-                                  style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                              const SizedBox(width: 8),
+                              // Category chips
+                              ...categories.map(
+                                (category) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: _buildCategoryChip(
+                                    context: context,
+                                    label:
+                                        category[0].toUpperCase() +
+                                        category.substring(1),
+                                    isSelected:
+                                        state.selectedCategory == category,
+                                    onTap: () {
+                                      context.read<ProductBloc>().add(
+                                        FilterByCategory(category: category),
+                                      );
+                                    },
                                   ),
                                 ),
-                                selected: state.selectedCategory == category,
-                                onSelected: (selected) {
-                                  if (selected) {
-                                    context.read<ProductBloc>().add(
-                                      FilterByCategory(category: category),
-                                    );
-                                  }
-                                },
-                                selectedColor: Theme.of(
-                                  context,
-                                ).colorScheme.surface,
-                                labelStyle: TextStyle(
-                                  color: state.selectedCategory == category
-                                      ? Theme.of(context).colorScheme.primary
-                                      : null,
-                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+
                   if (state.searchQuery != null ||
                       state.selectedCategory != null)
                     Padding(
@@ -304,4 +250,66 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
     );
   }
+}
+
+class ProductsSearchBar extends StatelessWidget {
+  const ProductsSearchBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: BlocBuilder<ProductBloc, ProductState>(
+        builder: (context, state) {
+          if (state is ProductsLoaded) {
+            return TextField(
+              onChanged: (value) {
+                context.read<ProductBloc>().add(SearchProducts(query: value));
+              },
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: state.searchQuery != null
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          context.read<ProductBloc>().add(ClearFilters());
+                        },
+                      )
+                    : null,
+              ),
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        },
+      ),
+    );
+  }
+}
+
+// Add this helper method outside the build method or as a separate widget
+Widget _buildCategoryChip({
+  required BuildContext context,
+  required String label,
+  required bool isSelected,
+  required VoidCallback onTap,
+}) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(20),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Theme.of(context).cardColor,
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    ),
+  );
 }

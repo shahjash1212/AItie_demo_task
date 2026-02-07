@@ -76,7 +76,7 @@ class ProductsLoaded extends ProductState {
       cartStatus: cartStatus ?? FormzStatus.initial,
       favoriteProductStatus: favoriteProductStatus ?? FormzStatus.initial,
       searchQuery: searchQuery ?? this.searchQuery,
-      selectedCategory: selectedCategory ?? this.selectedCategory,
+      selectedCategory: selectedCategory ?? 'All',
     );
   }
 }
