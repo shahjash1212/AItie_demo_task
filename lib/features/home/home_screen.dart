@@ -1,4 +1,3 @@
-import 'package:aitie_demo/constants/app_colors.dart';
 import 'package:aitie_demo/constants/app_images.dart';
 import 'package:aitie_demo/features/home/widgets/bottom_nav_item.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +14,8 @@ class HomeScreen extends StatelessWidget {
         child: Column(children: [Expanded(child: navigationShell)]),
       ),
       bottomNavigationBar: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(color: AppColors.darkBackground),
+        child: SizedBox(
+          height: 50,
           child: Row(
             children: [
               BottomNavItem(

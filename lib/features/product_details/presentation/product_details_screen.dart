@@ -1,5 +1,7 @@
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
+import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final ProductResponse product;
@@ -12,14 +14,28 @@ class ProductDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(product.title ?? ''),
         actions: [
-          IconButton(
-            icon: Icon(
-              (product.isFavorite ?? false)
-                  ? Icons.favorite
-                  : Icons.favorite_border,
-              color: (product.isFavorite ?? false) ? Colors.red : null,
-            ),
-            onPressed: () {},
+          BlocBuilder<ProductBloc, ProductState>(
+            builder: (context, state) {
+              if (state is ProductsLoaded) {
+                bool isFavorite =
+                    ((state).products
+                        .firstWhere((element) => element.id == product.id)
+                        .isFavorite ??
+                    false);
+                return IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : null,
+                  ),
+                  onPressed: () {
+                    context.read<ProductBloc>().add(
+                      AddToFavorite(productId: product.id ?? 0),
+                    );
+                  },
+                );
+              }
+              return const SizedBox.shrink();
+            },
           ),
         ],
       ),
@@ -27,7 +43,6 @@ class ProductDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Smooth image transition
             Hero(
               tag: 'product_${product.id}',
               child: AspectRatio(

@@ -1,34 +1,25 @@
 import 'package:aitie_demo/constants/app_common_widgets.dart';
 import 'package:aitie_demo/constants/app_network_image.dart';
 import 'package:aitie_demo/constants/gap.dart';
-import 'package:aitie_demo/features/products/data/data_sources/product_remote_data_source.dart';
-import 'package:aitie_demo/features/products/data/repositories/product_repository_impl.dart';
-import 'package:aitie_demo/features/products/presentation/bloc/bloc.dart';
+import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class ProductScreen extends StatelessWidget {
+class ProductScreen extends StatefulWidget {
   const ProductScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final remoteDataSource = ProductRemoteDataSourceImpl();
-    final repository = ProductRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-    );
-    final productBloc = ProductBloc(repository: repository);
-
-    return BlocProvider<ProductBloc>(
-      create: (context) => productBloc..add(const LoadProductsEvent()),
-      child: const _ProductScreenContent(),
-    );
-  }
+  State<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductScreenContent extends StatelessWidget {
-  const _ProductScreenContent();
+class _ProductScreenState extends State<ProductScreen> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    context.read<ProductBloc>().add(const LoadProductsEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,44 +50,6 @@ class _ProductScreenContent extends StatelessWidget {
                   },
                 );
               },
-            );
-          } else if (state is ProductDetailsLoaded) {
-            final product = state.product;
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (product.image != null) Image.network(product.image!),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.title ?? 'No Title',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const GapH(8),
-                        Text(
-                          '\$${product.price}',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const GapH(16),
-                        Text(product.description ?? 'No description'),
-                        const GapH(16),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<ProductBloc>().add(
-                              const LoadProductsEvent(),
-                            );
-                          },
-                          child: const Text('Back to Products'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             );
           } else if (state is ProductError) {
             return Center(

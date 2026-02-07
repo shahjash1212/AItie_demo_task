@@ -69,7 +69,6 @@ class AppsAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: isDark ? AppColors.lightSurface : AppColors.darkSurface,
       surfaceTintColor: Colors.transparent,
       title: Text(title),
       leading: GestureDetector(
