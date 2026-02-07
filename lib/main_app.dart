@@ -1,3 +1,4 @@
+import 'package:aitie_demo/features/connectivity_banner/connectivity_banner_widget.dart';
 import 'package:aitie_demo/features/products/data/data_sources/product_remote_data_source.dart';
 import 'package:aitie_demo/features/products/data/repositories/product_repository_impl.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
@@ -24,6 +25,9 @@ class MainApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
+        builder: (context, child) {
+          return ConnectivityBanner(child: child!);
+        },
         routerConfig: AppRouter.route,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,

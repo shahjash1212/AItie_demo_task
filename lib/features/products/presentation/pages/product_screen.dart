@@ -66,41 +66,45 @@ class _ProductScreenState extends State<ProductScreen> {
           if (state is ProductLoading) {
             return const Center(child: AppLoader());
           } else if (state is ProductsLoaded) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                // Determine number of columns based on screen width
-                int crossAxisCount;
-                double childAspectRatio;
-
-                if (constraints.maxWidth >= 1200) {
-                  crossAxisCount = 4; // Large tablets/desktop
-                  childAspectRatio = 0.65;
-                } else if (constraints.maxWidth >= 800) {
-                  crossAxisCount = 3; // Tablets
-                  childAspectRatio = 0.7;
-                } else if (constraints.maxWidth >= 600) {
-                  crossAxisCount = 2; // Large phones/small tablets
-                  childAspectRatio = 0.7;
-                } else {
-                  crossAxisCount = 2; // Phones
-                  childAspectRatio = 0.68;
-                }
-
-                return GridView.builder(
-                  padding: const EdgeInsets.all(8.0),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: childAspectRatio,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: state.products.length,
-                  itemBuilder: (context, index) {
-                    final product = state.products[index];
-                    return ProductContainer(product: product);
-                  },
-                );
+            return AppRefreshIndecator(
+              onRefresh: () async {
+                context.read<ProductBloc>().add(RefreshProductsEvent());
               },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  int crossAxisCount;
+                  double childAspectRatio;
+
+                  if (constraints.maxWidth >= 1200) {
+                    crossAxisCount = 4; // Large tablets/desktop
+                    childAspectRatio = 0.65;
+                  } else if (constraints.maxWidth >= 800) {
+                    crossAxisCount = 3; // Tablets
+                    childAspectRatio = 0.7;
+                  } else if (constraints.maxWidth >= 600) {
+                    crossAxisCount = 2; // Large phones/small tablets
+                    childAspectRatio = 0.7;
+                  } else {
+                    crossAxisCount = 2; // Phones
+                    childAspectRatio = 0.68;
+                  }
+
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(8.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: childAspectRatio,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: state.products.length,
+                    itemBuilder: (context, index) {
+                      final product = state.products[index];
+                      return ProductContainer(product: product);
+                    },
+                  );
+                },
+              ),
             );
           } else if (state is ProductError) {
             return ProductErrorWidget();
@@ -125,7 +129,6 @@ class ProductContainer extends StatelessWidget {
       child: InkWell(
         onTap: () async {
           await precacheImage(NetworkImage(product.image ?? ''), context);
-
           if (context.mounted) {
             GoRouter.of(
               context,
@@ -140,7 +143,7 @@ class ProductContainer extends StatelessWidget {
               Expanded(
                 flex: 30,
                 child: Hero(
-                  tag: 'product_${product.id}',
+                  tag: 'product_${product.id}${product.image}',
                   child: SizedBox(
                     width: double.infinity,
                     child: AppNetworkImage(

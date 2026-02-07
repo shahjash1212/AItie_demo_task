@@ -39,6 +39,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
       if (localProducts.isNotEmpty) {
         emit(ProductsLoaded(products: localProducts));
+
+        add(GetAllFavoriteProducts());
+        add(GetCartProducts());
         return;
       }
 
@@ -72,11 +75,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(const ProductLoading());
 
     try {
-      // Force fetch from API
       final result = await repository.getAllProducts();
 
       if (result is RepoSuccess) {
-        // Clear old data and save new data
         await localDbService.clearDatabase();
         await localDbService.saveProducts(result.data);
         emit(ProductsLoaded(products: result.data));

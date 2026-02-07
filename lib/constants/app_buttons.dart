@@ -35,9 +35,7 @@ class AppButtonBorder extends StatelessWidget {
           color: AppColors.lightBackground,
           border: Border.all(color: AppColors.darkBackground, width: 1.0),
         ),
-        child: isLoading
-            ? AppLoader(color: AppColors.darkBackground, size: 16)
-            : Text(text),
+        child: isLoading ? AppLoader(size: 16) : Text(text),
       ),
     );
   }

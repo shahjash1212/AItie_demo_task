@@ -1,3 +1,4 @@
+import 'package:aitie_demo/constants/app_network_image.dart';
 import 'package:aitie_demo/constants/gap.dart';
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
@@ -47,13 +48,12 @@ class ProductDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Hero(
-              tag: 'product_${product.id}',
+              tag: 'product_${product.id}${product.image}',
               child: AspectRatio(
                 aspectRatio: 1,
-                child: Image.network(product.image ?? '', fit: BoxFit.contain),
+                child: AppNetworkImage(imageUrl: product.image ?? ''),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -72,7 +72,7 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const GapH(12),
                   Text(
-                    '₹ ${product.price}',
+                    '\$ ${product.price}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

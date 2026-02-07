@@ -31,7 +31,7 @@ class AppNetworkImage extends StatelessWidget {
         child: SizedBox(
           width: 16,
           height: 16,
-          child: AppLoader(size: 2, color: AppColors.darkBackground),
+          child: AppLoader(size: 2,),
         ),
       ),
       errorBuilder: (context, error, stackTrace) {

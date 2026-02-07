@@ -37,7 +37,7 @@ class CartSummary extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Text(
-                    '₹${subtotal.toStringAsFixed(2)}',
+                    '\$${subtotal.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
@@ -81,7 +81,7 @@ class CartSummary extends StatelessWidget {
             const Text('Order Summary:'),
             const GapH(8),
             Text(
-              'Total Amount: ₹${total.toStringAsFixed(2)}',
+              'Total Amount: \$${total.toStringAsFixed(2)}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const GapH(16),

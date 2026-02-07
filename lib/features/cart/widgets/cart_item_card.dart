@@ -42,7 +42,7 @@ class CartItemCard extends StatelessWidget {
                   ),
                   const GapH(8),
                   Text(
-                    '₹${product.price}',
+                    '\$${product.price}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
