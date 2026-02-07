@@ -1,8 +1,5 @@
 import 'package:aitie_demo/constants/app_colors.dart';
-import 'package:aitie_demo/constants/app_images.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 
 class AppRefreshIndecator extends StatelessWidget {
   const AppRefreshIndecator({
@@ -45,57 +42,4 @@ class AppLoader extends StatelessWidget {
       child: CircularProgressIndicator(strokeWidth: 3, color: color),
     );
   }
-}
-
-class AppsAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  final bool isDark;
-  final Widget? leading;
-  final double? elevation;
-  final VoidCallback? onBack;
-
-  final List<Widget> actions;
-
-  const AppsAppBar({
-    super.key,
-    required this.title,
-    this.isDark = false,
-    this.leading,
-    this.elevation,
-    this.onBack,
-    this.actions = const [],
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      surfaceTintColor: Colors.transparent,
-      title: Text(title),
-      leading: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () {
-          if (onBack == null) {
-            GoRouter.of(context).pop();
-          }
-          if (onBack != null) {
-            onBack?.call();
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.only(left: 15.0),
-          child: SvgPicture.asset(
-            AppImages.leftArrow,
-            colorFilter: ColorFilter.mode(
-              isDark ? AppColors.lightBackground : AppColors.darkBackground,
-              BlendMode.srcIn,
-            ),
-          ),
-        ),
-      ),
-      actions: actions,
-    );
-  }
-
-  @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
 }

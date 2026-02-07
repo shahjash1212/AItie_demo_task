@@ -1,7 +1,10 @@
+import 'package:aitie_demo/constants/gap.dart';
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
+import 'package:aitie_demo/routing/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final ProductResponse product;
@@ -56,32 +59,26 @@ class ProductDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
                   Text(
                     product.title ?? '',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const SizedBox(height: 8),
-
-                  // Category
+                  const GapH(8),
                   Text(
                     product.category ?? '',
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                   ),
-                  const SizedBox(height: 12),
-
-                  // Price
+                  const GapH(12),
                   Text(
                     '₹ ${product.price}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const GapH(12),
 
-                  // Rating
                   if (product.rating != null)
                     Row(
                       children: [
@@ -94,9 +91,7 @@ class ProductDetailScreen extends StatelessWidget {
                       ],
                     ),
 
-                  const SizedBox(height: 16),
-
-                  // Description
+                  const GapH(16),
                   Text(
                     product.description ?? '',
                     style: Theme.of(context).textTheme.bodyMedium,
@@ -118,15 +113,20 @@ class ProductDetailScreen extends StatelessWidget {
               );
               bool isInCart = currentProduct.isInCart ?? false;
               return ElevatedButton(
-                onPressed: isInCart
-                    ? null
-                    : () => context.read<ProductBloc>().add(
-                        AddToCart(productId: product.id ?? 0),
-                      ),
+                onPressed: () {
+                  if (isInCart) {
+                    GoRouter.of(context).goNamed(RouteNames.cart);
+                  } else {
+                    context.read<ProductBloc>().add(
+                      AddToCart(productId: product.id ?? 0),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  disabledBackgroundColor: Colors.green.withValues(alpha: 0.1),
-                  disabledForegroundColor: Colors.green,
+                  backgroundColor: isInCart
+                      ? Colors.green
+                      : Theme.of(context).colorScheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
@@ -135,10 +135,10 @@ class ProductDetailScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (isInCart) ...[
-                      const Icon(Icons.check, size: 18),
+                      const Icon(Icons.shopping_cart_outlined, size: 18),
                       const SizedBox(width: 8),
                     ],
-                    Text(isInCart ? 'Already in Cart' : 'Add to Cart'),
+                    Text(isInCart ? 'Go to Cart' : 'Add to Cart'),
                   ],
                 ),
               );

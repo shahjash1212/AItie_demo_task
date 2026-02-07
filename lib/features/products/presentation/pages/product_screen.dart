@@ -1,6 +1,7 @@
 import 'package:aitie_demo/constants/app_common_widgets.dart';
 import 'package:aitie_demo/constants/app_network_image.dart';
 import 'package:aitie_demo/constants/gap.dart';
+import 'package:aitie_demo/features/cart/widgets/cart_icon_button.dart';
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
 import 'package:aitie_demo/routing/route_names.dart';
@@ -17,7 +18,6 @@ class ProductScreen extends StatefulWidget {
 
 class _ProductScreenState extends State<ProductScreen> {
   @override
-
   void didChangeDependencies() {
     super.didChangeDependencies();
     context.read<ProductBloc>().add(const LoadProductsEvent());
@@ -26,7 +26,40 @@ class _ProductScreenState extends State<ProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppsAppBar(title: 'Products'),
+      appBar: AppBar(
+        title: const Text('Products'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: BlocBuilder<ProductBloc, ProductState>(
+              builder: (context, state) {
+                if (state is ProductsLoaded) {
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      AppIconButton(
+                        onPressed: () =>
+                            GoRouter.of(context).goNamed(RouteNames.cart),
+                        icon: Icons.shopping_cart_outlined,
+                      ),
+                      if (state.cartProducts.isNotEmpty)
+                        Positioned(
+                          right: 5,
+                          top: 5,
+                          child: CircleAvatar(
+                            radius: 3,
+                            backgroundColor: Colors.red,
+                          ),
+                        ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ],
+      ),
       body: BlocBuilder<ProductBloc, ProductState>(
         builder: (context, state) {
           if (state is ProductLoading) {

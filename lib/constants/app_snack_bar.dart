@@ -1,4 +1,3 @@
-import 'package:aitie_demo/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 void showErrorSnackBar(BuildContext context, String description) {
@@ -45,4 +44,3 @@ void showSuccessSnackBar(BuildContext context, String description) {
     ..hideCurrentSnackBar()
     ..showSnackBar(successSnackBar(description: description));
 }
-

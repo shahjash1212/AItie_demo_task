@@ -6,6 +6,7 @@ import 'package:aitie_demo/features/cart/widgets/empty_cart.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -83,16 +84,14 @@ class CartScreen extends StatelessWidget {
         content: const Text('Are you sure you want to remove all items?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => GoRouter.of(context).pop(ctx),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-
-            // onPressed: () {
-            //   // context.read<ProductBloc>().add(ClearCart());
-            //   // Navigator.pop(ctx);
-            // },
+            onPressed: () {
+              context.read<ProductBloc>().add(ClearCart());
+              GoRouter.of(context).pop(ctx);
+            },
             child: const Text('Clear', style: TextStyle(color: Colors.red)),
           ),
         ],

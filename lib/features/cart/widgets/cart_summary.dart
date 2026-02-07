@@ -1,5 +1,9 @@
+import 'package:aitie_demo/constants/gap.dart';
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
+import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class CartSummary extends StatelessWidget {
   final List<ProductResponse> cartItems;
@@ -41,7 +45,7 @@ class CartSummary extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const GapH(16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -75,12 +79,12 @@ class CartSummary extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Order Summary:'),
-            const SizedBox(height: 8),
+            const GapH(8),
             Text(
               'Total Amount: ₹${total.toStringAsFixed(2)}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const GapH(16),
             const Text(
               'This is a demo. No actual payment will be processed.',
               style: TextStyle(color: Colors.grey, fontSize: 12),
@@ -94,14 +98,14 @@ class CartSummary extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              // context.read<ProductBloc>().add(ClearCart());
+              context.read<ProductBloc>().add(ClearCart());
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('✅ Order placed successfully!'),
                   backgroundColor: Colors.green,
                 ),
               );
-              Navigator.pop(context); // Go back to products screen
+              GoRouter.of(context).pop();
             },
             child: const Text('Place Order'),
           ),

@@ -1,3 +1,4 @@
+import 'package:aitie_demo/constants/gap.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -16,21 +17,21 @@ class EmptyCart extends StatelessWidget {
             size: 100,
             color: Colors.grey.shade300,
           ),
-          const SizedBox(height: 16),
+          const GapH(16),
           Text(
             'Your cart is empty',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(color: Colors.grey),
           ),
-          const SizedBox(height: 8),
+          const GapH(8),
           Text(
             'Add some products to get started',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
           ),
-          const SizedBox(height: 24),
+          const GapH(24),
           ElevatedButton.icon(
             onPressed: () {
               GoRouter.of(context).goNamed(RouteNames.product);

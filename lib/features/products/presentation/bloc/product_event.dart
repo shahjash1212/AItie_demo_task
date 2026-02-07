@@ -32,3 +32,22 @@ class AddToCart extends ProductEvent {
 class GetCartProducts extends ProductEvent {}
 
 class GetAllFavoriteProducts extends ProductEvent {}
+
+class RemoveFromCart extends ProductEvent {
+  final int productId;
+  const RemoveFromCart({required this.productId});
+  @override
+  List<Object?> get props => [productId];
+}
+
+class UpdateCartQuantity extends ProductEvent {
+  final int productId;
+  final int quantity;
+  const UpdateCartQuantity({required this.productId, required this.quantity});
+  @override
+  List<Object?> get props => [productId, quantity];
+}
+
+class ClearCart extends ProductEvent {
+  const ClearCart();
+}
