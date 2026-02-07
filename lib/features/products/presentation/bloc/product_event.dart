@@ -51,3 +51,7 @@ class UpdateCartQuantity extends ProductEvent {
 class ClearCart extends ProductEvent {
   const ClearCart();
 }
+
+class ClearDatabaseEvent extends ProductEvent {}
+
+class RefreshProductsEvent extends ProductEvent {}

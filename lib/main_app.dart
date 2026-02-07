@@ -3,6 +3,7 @@ import 'package:aitie_demo/features/products/data/repositories/product_repositor
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
 import 'package:aitie_demo/routing/app_router.dart';
 import 'package:aitie_demo/utils/app_theme.dart';
+import 'package:aitie_demo/utils/local_db_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,6 +16,7 @@ class MainApp extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (_) => ProductBloc(
+            localDbService: LocalDbService.instance,
             repository: ProductRepositoryImpl(
               remoteDataSource: ProductRemoteDataSourceImpl(),
             ),

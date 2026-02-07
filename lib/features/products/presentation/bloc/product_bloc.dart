@@ -1,6 +1,8 @@
+// product_bloc.dart
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/domain/repositories/product_repository.dart';
 import 'package:aitie_demo/utils/formz_status.dart';
+import 'package:aitie_demo/utils/local_db_service.dart';
 import 'package:aitie_demo/utils/repo_result_class.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,35 +12,107 @@ part 'product_state.dart';
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final ProductRepository repository;
+  final LocalDbService localDbService;
 
-  ProductBloc({required this.repository}) : super(const ProductInitial()) {
+  ProductBloc({required this.repository, required this.localDbService})
+    : super(const ProductInitial()) {
     on<LoadProductsEvent>(_onLoadProducts);
     on<AddToFavorite>(_addToFavorite);
     on<AddToCart>(_addToCart);
     on<GetAllFavoriteProducts>(_getAllFavoriteProducts);
     on<GetCartProducts>(_getCartProducts);
-
     on<RemoveFromCart>(_removeFromCart);
     on<UpdateCartQuantity>(_updateCartQuantity);
     on<ClearCart>(_clearCart);
+    on<ClearDatabaseEvent>(_clearDatabase);
+    on<RefreshProductsEvent>(_refreshProducts);
   }
+
   Future<void> _onLoadProducts(
     LoadProductsEvent event,
     Emitter<ProductState> emit,
   ) async {
     emit(const ProductLoading());
 
-    final result = await repository.getAllProducts();
+    try {
+      final localProducts = await localDbService.getAllProducts();
 
-    if (result is RepoSuccess) {
-      emit(ProductsLoaded(products: result.data));
-    } else if (result is RepoFailure) {
+      if (localProducts.isNotEmpty) {
+        emit(ProductsLoaded(products: localProducts));
+        return;
+      }
+
+      final result = await repository.getAllProducts();
+
+      if (result is RepoSuccess) {
+        await localDbService.saveProducts(result.data);
+        emit(ProductsLoaded(products: result.data));
+      } else if (result is RepoFailure) {
+        emit(
+          ProductError(
+            message: result.errorMessage,
+            statusCode: result.statusCode,
+          ),
+        );
+      }
+    } catch (e) {
       emit(
         ProductError(
-          message: result.errorMessage,
-          statusCode: result.statusCode,
+          message: 'Failed to load products: ${e.toString()}',
+          statusCode: null,
         ),
       );
+    }
+  }
+
+  Future<void> _refreshProducts(
+    RefreshProductsEvent event,
+    Emitter<ProductState> emit,
+  ) async {
+    emit(const ProductLoading());
+
+    try {
+      // Force fetch from API
+      final result = await repository.getAllProducts();
+
+      if (result is RepoSuccess) {
+        // Clear old data and save new data
+        await localDbService.clearDatabase();
+        await localDbService.saveProducts(result.data);
+        emit(ProductsLoaded(products: result.data));
+      } else if (result is RepoFailure) {
+        emit(
+          ProductError(
+            message: result.errorMessage,
+            statusCode: result.statusCode,
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        ProductError(
+          message: 'Failed to refresh products: ${e.toString()}',
+          statusCode: null,
+        ),
+      );
+    }
+  }
+
+  Future<void> _clearDatabase(
+    ClearDatabaseEvent event,
+    Emitter<ProductState> emit,
+  ) async {
+    try {
+      await localDbService.clearDatabase();
+      emit(const ProductInitial());
+    } catch (e) {
+      if (state is ProductsLoaded) {
+        emit(
+          (state as ProductsLoaded).copyWith(
+            favoriteStatus: FormzStatus.failure,
+          ),
+        );
+      }
     }
   }
 
@@ -61,6 +135,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
         return product;
       }).toList();
+
+      // Update database
+      await localDbService.saveProducts(oldProducts);
 
       emit(
         (state as ProductsLoaded).copyWith(
@@ -147,6 +224,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         return product;
       }).toList();
 
+      // Update database
+      await localDbService.saveProducts(oldProducts);
+
       emit(
         (state as ProductsLoaded).copyWith(
           products: oldProducts,
@@ -176,6 +256,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
         return product;
       }).toList();
+
+      // Update database
+      await localDbService.saveProducts(oldProducts);
 
       emit(
         (state as ProductsLoaded).copyWith(
@@ -207,6 +290,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         return product;
       }).toList();
 
+      // Update database
+      await localDbService.saveProducts(oldProducts);
+
       emit(
         (state as ProductsLoaded).copyWith(
           products: oldProducts,
@@ -230,6 +316,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       oldProducts = oldProducts.map((product) {
         return product.copyWith(isInCart: false, quantity: 0);
       }).toList();
+
+      // Update database
+      await localDbService.saveProducts(oldProducts);
 
       emit(
         (state as ProductsLoaded).copyWith(
