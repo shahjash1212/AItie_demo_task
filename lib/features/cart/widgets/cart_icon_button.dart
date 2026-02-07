@@ -9,7 +9,7 @@ class AppIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => onPressed?.call(),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(5),
       child: Container(
         padding: const EdgeInsets.all(8),
         child: Icon(icon, size: 18),

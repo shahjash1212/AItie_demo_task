@@ -63,7 +63,10 @@ class DioInterceptor {
 
           // Only navigate if we aren't already there
           if (!isAlreadyOnExternalError) {
-            router.go('${RouteNames.error}?message=$errorMessage');
+            router.goNamed(
+              RouteNames.error,
+              queryParameters: {'message': errorMessage},
+            );
           }
         } else if (e.type == DioExceptionType.connectionError) {
           errorMessage = "No internet connection.";
@@ -74,7 +77,10 @@ class DioInterceptor {
 
           // Only navigate if we aren't already there
           if (!isAlreadyOnExternalError) {
-            router.push('${RouteNames.error}?message=$errorMessage');
+            router.pushNamed(
+              RouteNames.error,
+              queryParameters: {'message': errorMessage},
+            );
           }
         } else {
           errorMessage = e.message ?? "Something went wrong";

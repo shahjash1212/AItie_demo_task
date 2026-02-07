@@ -1,8 +1,10 @@
 import 'package:aitie_demo/constants/app_network_image.dart';
 import 'package:aitie_demo/constants/gap.dart';
 import 'package:aitie_demo/features/cart/widgets/cart_icon_button.dart';
+import 'package:aitie_demo/features/errors/error_screen.dart';
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
+import 'package:aitie_demo/features/products/presentation/pages/widgets/product_error_widget.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -71,7 +73,7 @@ class FavoriteScreen extends StatelessWidget {
           }
 
           if (state is ProductError) {
-            return _buildErrorState(context, state.message);
+            return ProductErrorWidget();
           }
 
           return const SizedBox.shrink();
@@ -126,12 +128,10 @@ class FavoriteScreen extends StatelessWidget {
             ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
           ),
           const GapH(24),
-          ElevatedButton.icon(
-            onPressed: () {
+          RetryButton(
+            onRetry: () {
               context.read<ProductBloc>().add(const LoadProductsEvent());
             },
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
           ),
         ],
       ),
@@ -192,7 +192,7 @@ class _FavoriteItemCard extends StatelessWidget {
             context,
           ).goNamed(RouteNames.productDetail, extra: product);
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(5),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(

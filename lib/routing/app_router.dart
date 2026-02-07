@@ -1,4 +1,5 @@
 import 'package:aitie_demo/features/cart/cart_screen.dart';
+import 'package:aitie_demo/features/errors/error_screen.dart';
 import 'package:aitie_demo/features/favorite/favorite_screen.dart';
 import 'package:aitie_demo/features/home/home_screen.dart';
 import 'package:aitie_demo/features/product_details/presentation/product_details_screen.dart';
@@ -55,6 +56,16 @@ class AppRouter {
           final product = state.extra as ProductResponse;
 
           return ProductDetailScreen(product: product);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.error,
+        name: RouteNames.error,
+        builder: (context, state) {
+          return ErrorScreen(
+            message:
+                state.uri.queryParameters['message'] ?? 'Something went wrong',
+          );
         },
       ),
     ],

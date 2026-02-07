@@ -93,7 +93,7 @@ class QuantityControl extends StatelessWidget {
           return Container(
             decoration: BoxDecoration(
               border: Border.all(color: Theme.of(context).colorScheme.primary),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(5),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

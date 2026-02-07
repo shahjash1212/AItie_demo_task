@@ -4,6 +4,7 @@ import 'package:aitie_demo/features/cart/widgets/cart_item_card.dart';
 import 'package:aitie_demo/features/cart/widgets/cart_summary.dart';
 import 'package:aitie_demo/features/cart/widgets/empty_cart.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
+import 'package:aitie_demo/features/products/presentation/pages/widgets/product_error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -42,9 +43,7 @@ class CartScreen extends StatelessWidget {
         builder: (context, state) {
           if (state is ProductLoading) {
             return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is ProductsLoaded) {
+          } else if (state is ProductsLoaded) {
             final cartItems = state.products
                 .where((product) => product.isInCart == true)
                 .toList();
@@ -68,8 +67,7 @@ class CartScreen extends StatelessWidget {
               ],
             );
           }
-
-          return const Center(child: Text('Something went wrong'));
+          return ProductErrorWidget();
         },
       ),
     );
@@ -79,7 +77,7 @@ class CartScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         title: const Text('Clear Cart'),
         content: const Text('Are you sure you want to remove all items?'),
         actions: [
