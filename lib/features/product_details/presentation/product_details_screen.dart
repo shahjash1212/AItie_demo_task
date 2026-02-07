@@ -107,16 +107,45 @@ class ProductDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-
-      // Add to cart button
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
-        child: ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          child: const Text('Add to Cart'),
+        child: BlocBuilder<ProductBloc, ProductState>(
+          builder: (context, state) {
+            if (state is ProductsLoaded) {
+              final currentProduct = state.products.firstWhere(
+                (element) => element.id == product.id,
+                orElse: () => product,
+              );
+              bool isInCart = currentProduct.isInCart ?? false;
+              return ElevatedButton(
+                onPressed: isInCart
+                    ? null
+                    : () => context.read<ProductBloc>().add(
+                        AddToCart(productId: product.id ?? 0),
+                      ),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  disabledBackgroundColor: Colors.green.withValues(alpha: 0.1),
+                  disabledForegroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (isInCart) ...[
+                      const Icon(Icons.check, size: 18),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(isInCart ? 'Already in Cart' : 'Add to Cart'),
+                  ],
+                ),
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
         ),
       ),
     );

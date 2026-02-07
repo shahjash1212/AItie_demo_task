@@ -19,3 +19,16 @@ class AddToFavorite extends ProductEvent {
   @override
   List<Object?> get props => [productId];
 }
+
+class AddToCart extends ProductEvent {
+  final int productId;
+
+  const AddToCart({required this.productId});
+
+  @override
+  List<Object?> get props => [productId];
+}
+
+class GetCartProducts extends ProductEvent {}
+
+class GetAllFavoriteProducts extends ProductEvent {}

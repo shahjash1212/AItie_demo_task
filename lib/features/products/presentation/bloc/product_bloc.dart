@@ -14,6 +14,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc({required this.repository}) : super(const ProductInitial()) {
     on<LoadProductsEvent>(_onLoadProducts);
     on<AddToFavorite>(_addToFavorite);
+    on<AddToCart>(_addToCart);
+    on<GetAllFavoriteProducts>(_getAllFavoriteProducts);
+    on<GetCartProducts>(_getCartProducts);
   }
   Future<void> _onLoadProducts(
     LoadProductsEvent event,
@@ -61,10 +64,94 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           favoriteStatus: FormzStatus.success,
         ),
       );
+      add(GetAllFavoriteProducts());
     } catch (e) {
       emit(
         (state as ProductsLoaded).copyWith(favoriteStatus: FormzStatus.failure),
       );
+    }
+  }
+
+  Future<void> _addToCart(AddToCart event, Emitter<ProductState> emit) async {
+    try {
+      emit(
+        (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.inProgress),
+      );
+      List<ProductResponse> oldProducts = List.from(
+        (state as ProductsLoaded).products,
+      );
+      oldProducts = oldProducts.map((product) {
+        if (product.id == event.productId) {
+          return product.copyWith(isInCart: !(product.isInCart ?? false));
+        }
+        return product;
+      }).toList();
+
+      emit(
+        (state as ProductsLoaded).copyWith(
+          products: oldProducts,
+          cartStatus: FormzStatus.success,
+        ),
+      );
+      add(GetCartProducts());
+    } catch (e) {
+      emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
+    }
+  }
+
+  Future<void> _getAllFavoriteProducts(
+    GetAllFavoriteProducts event,
+    Emitter<ProductState> emit,
+  ) async {
+    try {
+      emit(
+        (state as ProductsLoaded).copyWith(
+          favoriteProductStatus: FormzStatus.inProgress,
+        ),
+      );
+      List<ProductResponse> oldProducts = List.from(
+        (state as ProductsLoaded).products,
+      );
+      List<ProductResponse> favoriteProducts = oldProducts
+          .where((product) => product.isFavorite == true)
+          .toList();
+      emit(
+        (state as ProductsLoaded).copyWith(
+          favoriteProducts: favoriteProducts,
+          favoriteProductStatus: FormzStatus.success,
+        ),
+      );
+    } catch (e) {
+      emit(
+        (state as ProductsLoaded).copyWith(
+          favoriteProductStatus: FormzStatus.failure,
+        ),
+      );
+    }
+  }
+
+  Future<void> _getCartProducts(
+    GetCartProducts event,
+    Emitter<ProductState> emit,
+  ) async {
+    try {
+      emit(
+        (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.inProgress),
+      );
+      List<ProductResponse> oldProducts = List.from(
+        (state as ProductsLoaded).products,
+      );
+      List<ProductResponse> inCartProducts = oldProducts
+          .where((product) => product.isInCart == true)
+          .toList();
+      emit(
+        (state as ProductsLoaded).copyWith(
+          cartProducts: inCartProducts,
+          cartStatus: FormzStatus.success,
+        ),
+      );
+    } catch (e) {
+      emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
     }
   }
 }

@@ -1,8 +1,9 @@
+import 'package:aitie_demo/features/cart/cart_screen.dart';
+import 'package:aitie_demo/features/favorite/favorite_screen.dart';
 import 'package:aitie_demo/features/home/home_screen.dart';
 import 'package:aitie_demo/features/product_details/presentation/product_details_screen.dart';
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/presentation/pages/product_screen.dart';
-import 'package:aitie_demo/features/splash/splash_screen.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,7 +32,7 @@ class AppRouter {
                 path: RouteNames.favorites,
                 name: RouteNames.favorites,
                 builder: (context, state) {
-                  return SplashScreen();
+                  return FavoriteScreen();
                 },
               ),
             ],
@@ -41,7 +42,7 @@ class AppRouter {
               GoRoute(
                 path: RouteNames.cart,
                 name: RouteNames.cart,
-                builder: (context, state) => SplashScreen(),
+                builder: (context, state) => CartScreen(),
               ),
             ],
           ),

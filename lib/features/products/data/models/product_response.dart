@@ -12,6 +12,8 @@ class ProductResponse extends Equatable {
   final String? image;
   final Rating? rating;
   final bool? isFavorite;
+  final bool? isInCart;
+  final int? quantity;
   const ProductResponse({
     this.id,
     this.title,
@@ -21,6 +23,8 @@ class ProductResponse extends Equatable {
     this.image,
     this.rating,
     this.isFavorite,
+    this.isInCart,
+    this.quantity,
   });
 
   ProductResponse copyWith({
@@ -32,6 +36,8 @@ class ProductResponse extends Equatable {
     String? image,
     Rating? rating,
     bool? isFavorite,
+    bool? isInCart,
+    int? quantity,
   }) {
     return ProductResponse(
       id: id ?? this.id,
@@ -42,6 +48,8 @@ class ProductResponse extends Equatable {
       image: image ?? this.image,
       rating: rating ?? this.rating,
       isFavorite: isFavorite ?? this.isFavorite,
+      isInCart: isInCart ?? this.isInCart,
+      quantity: quantity ?? this.quantity,
     );
   }
 
@@ -55,6 +63,8 @@ class ProductResponse extends Equatable {
       'image': image,
       'rating': rating?.toMap(),
       'isFavorite': isFavorite,
+      'isInCart': isInCart,
+      'quantity': quantity,
     };
   }
 
@@ -72,6 +82,8 @@ class ProductResponse extends Equatable {
           ? Rating.fromMap(map['rating'] as Map<String, dynamic>)
           : null,
       isFavorite: map['isFavorite'] != null ? map['isFavorite'] as bool : null,
+      isInCart: map['isInCart'] != null ? map['isInCart'] as bool : null,
+      quantity: map['quantity'] != null ? map['quantity'] as int : null,
     );
   }
 
@@ -85,7 +97,18 @@ class ProductResponse extends Equatable {
 
   @override
   List<Object?> get props {
-    return [id, title, price, description, category, image, rating, isFavorite];
+    return [
+      id,
+      title,
+      price,
+      description,
+      category,
+      image,
+      rating,
+      isFavorite,
+      isInCart,
+      quantity,
+    ];
   }
 }
 
