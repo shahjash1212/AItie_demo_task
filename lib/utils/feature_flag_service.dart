@@ -11,7 +11,6 @@ class FeatureFlagService {
 
   FeatureFlagService(this._prefs);
 
-  // Initialize with default values (all enabled)
   Future<void> initializeDefaults() async {
     if (!_prefs.containsKey(_favoritesKey)) {
       await _prefs.setBool(_favoritesKey, true);
@@ -27,14 +26,12 @@ class FeatureFlagService {
     }
   }
 
-  // Getters
   bool get isFavoritesEnabled => _prefs.getBool(_favoritesKey) ?? true;
   bool get isCartEnabled => _prefs.getBool(_cartKey) ?? true;
   bool get isOfflineCachingEnabled =>
       _prefs.getBool(_offlineCachingKey) ?? true;
   bool get isDebugMenuEnabled => _prefs.getBool(_debugMenuKey) ?? false;
 
-  // Setters
   Future<void> setFavoritesEnabled(bool value) async {
     await _prefs.setBool(_favoritesKey, value);
   }
@@ -51,7 +48,6 @@ class FeatureFlagService {
     await _prefs.setBool(_debugMenuKey, value);
   }
 
-  // Get all flags
   Map<String, bool> getAllFlags() {
     return {
       'favorites': isFavoritesEnabled,

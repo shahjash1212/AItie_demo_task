@@ -43,11 +43,9 @@ class DioInterceptor {
       onError: (DioException e, handler) async {
         String errorMessage = "Something went wrong";
 
-        // 1. Get the current active route location from GoRouter
         final String currentLocation =
             router.routerDelegate.currentConfiguration.last.matchedLocation;
 
-        // 2. Check if the current location is already the error screen
         final bool isAlreadyOnExternalError = currentLocation.contains(
           RouteNames.error,
         );
