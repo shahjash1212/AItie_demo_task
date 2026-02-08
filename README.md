@@ -19,6 +19,41 @@ That's it! The app will compile and launch on your connected device or emulator.
 
 ---
 
+## How to Install
+
+### Build APK for Android
+
+Run the following command to build a release APK:
+
+```bash
+flutter build apk --release
+```
+
+The APK will be generated at:
+```
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+Install it on your Android device by transferring the APK or using adb.
+
+### Enable Deep Linking (Android)
+
+This app supports deep linking on Android. To enable it:
+
+1. Open **App Info** on your Android device
+2. Navigate to **"Open by default"** section
+3. Select the added link to enable deep linking
+
+### Troubleshooting Installation Issues
+
+If you encounter installation problems:
+
+1. Go to **Google Play Store** settings
+2. Disable **Play Protect** option
+3. Try installing the APK again
+
+---
+
 ## App Architecture Overview
 
 The project follows **Clean Architecture** with clear separation of concerns:
