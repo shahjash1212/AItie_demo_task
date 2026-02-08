@@ -9,8 +9,13 @@ import 'package:go_router/go_router.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final ProductResponse product;
+  final bool isFromFavorites;
 
-  const ProductDetailScreen({super.key, required this.product});
+  const ProductDetailScreen({
+    super.key,
+    required this.product,
+    required this.isFromFavorites,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +53,9 @@ class ProductDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Hero(
-              tag: 'product_${product.id}${product.image}',
+              tag: isFromFavorites
+                  ? 'favorite_product_${product.id}${product.image}'
+                  : 'product_${product.id}${product.image}',
               child: AspectRatio(
                 aspectRatio: 1,
                 child: AppNetworkImage(imageUrl: product.image ?? ''),

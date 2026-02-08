@@ -53,9 +53,14 @@ class AppRouter {
         path: RouteNames.productDetail,
         name: RouteNames.productDetail,
         builder: (context, state) {
-          final product = state.extra as ProductResponse;
-
-          return ProductDetailScreen(product: product);
+          final Map<String, dynamic> extra =
+              state.extra as Map<String, dynamic>;
+          final product = extra['product'] as ProductResponse;
+          final bool isFromFavorites = extra['isFromFavorites'] as bool;
+          return ProductDetailScreen(
+            product: product,
+            isFromFavorites: isFromFavorites,
+          );
         },
       ),
       GoRoute(

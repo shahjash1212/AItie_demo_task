@@ -20,9 +20,10 @@ class ProductContainer extends StatelessWidget {
         onTap: () async {
           await precacheImage(NetworkImage(product.image ?? ''), context);
           if (context.mounted) {
-            GoRouter.of(
-              context,
-            ).pushNamed(RouteNames.productDetail, extra: product);
+            GoRouter.of(context).pushNamed(
+              RouteNames.productDetail,
+              extra: {'product': product, 'isFromFavorites': false},
+            );
           }
         },
         child: Padding(

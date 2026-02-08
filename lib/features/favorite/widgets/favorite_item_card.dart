@@ -17,10 +17,14 @@ class FavoriteItemCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () {
-          GoRouter.of(
-            context,
-          ).pushNamed(RouteNames.productDetail, extra: product);
+        onTap: () async {
+          await precacheImage(NetworkImage(product.image ?? ''), context);
+          if (context.mounted) {
+            GoRouter.of(context).pushNamed(
+              RouteNames.productDetail,
+              extra: {'product': product, 'isFromFavorites': true},
+            );
+          }
         },
         borderRadius: BorderRadius.circular(5),
         child: Padding(
@@ -29,7 +33,7 @@ class FavoriteItemCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Hero(
-                tag: 'product_${product.id}${product.image}',
+                tag: 'favorite_product_${product.id}${product.image}',
                 child: AppNetworkImage(imageUrl: product.image ?? ''),
               ),
               const GapW(12),
