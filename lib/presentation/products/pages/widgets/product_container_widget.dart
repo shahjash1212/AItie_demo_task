@@ -1,6 +1,6 @@
 import 'package:aitie_demo/constants/app_network_image.dart';
 import 'package:aitie_demo/constants/gap.dart';
-import 'package:aitie_demo/presentation/product_details/presentation/product_details_screen.dart';
+import 'package:aitie_demo/presentation/product_details/product_details_screen.dart';
 import 'package:aitie_demo/data/product/models/product_response.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:flutter/material.dart';

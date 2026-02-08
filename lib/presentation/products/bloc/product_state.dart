@@ -93,3 +93,30 @@ class ProductError extends ProductState {
   @override
   List<Object?> get props => [message, statusCode];
 }
+
+class SingleProductLoaded extends ProductState {
+  final ProductResponse product;
+  final FormzStatus favoriteStatus;
+  final FormzStatus cartStatus;
+
+  const SingleProductLoaded({
+    required this.product,
+    this.favoriteStatus = FormzStatus.initial,
+    this.cartStatus = FormzStatus.initial,
+  });
+
+  SingleProductLoaded copyWith({
+    ProductResponse? product,
+    FormzStatus? favoriteStatus,
+    FormzStatus? cartStatus,
+  }) {
+    return SingleProductLoaded(
+      product: product ?? this.product,
+      favoriteStatus: favoriteStatus ?? this.favoriteStatus,
+      cartStatus: cartStatus ?? this.cartStatus,
+    );
+  }
+
+  @override
+  List<Object?> get props => [product, favoriteStatus, cartStatus];
+}

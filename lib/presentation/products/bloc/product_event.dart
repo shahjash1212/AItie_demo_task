@@ -97,3 +97,11 @@ class ClearFilters extends ProductEvent {
   @override
   List<Object?> get props => [isSearchQueryCleared, isCategoryCleared];
 }
+
+class LoadSingleProductEvent extends ProductEvent {
+  final int productId;
+  const LoadSingleProductEvent({required this.productId});
+
+  @override
+  List<Object?> get props => [productId];
+}

@@ -49,7 +49,6 @@ class BottomNavItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-
               Icon(icon, size: 22, color: iconColor),
               AnimatedSize(
                 duration: const Duration(milliseconds: 250),
@@ -61,7 +60,7 @@ class BottomNavItem extends StatelessWidget {
                           Text(
                             label,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: iconColor,
                             ),

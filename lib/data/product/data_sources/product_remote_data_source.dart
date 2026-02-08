@@ -24,7 +24,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<ApiResult> getProductDetails({required int productId}) async {
     try {
-      ApiResult result = await DioClient.get('');
+      ApiResult result = await DioClient.get(
+        '${ApiEndPoint.products}/$productId',
+      );
       return result;
     } catch (e) {
       debugPrint(e.toString());

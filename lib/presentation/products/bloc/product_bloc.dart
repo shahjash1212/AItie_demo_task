@@ -33,6 +33,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<SearchProducts>(_onSearchProducts);
     on<FilterByCategory>(_onFilterByCategory);
     on<ClearFilters>(_onClearFilters);
+    on<LoadSingleProductEvent>(_onLoadSingleProduct);
   }
 
   Future<void> _onLoadProducts(
@@ -217,43 +218,142 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     Emitter<ProductState> emit,
   ) async {
     if (!featureFlagService.isFavoritesEnabled) {
-      emit(
-        (state as ProductsLoaded).copyWith(favoriteStatus: FormzStatus.failure),
-      );
+      if (state is ProductsLoaded) {
+        emit(
+          (state as ProductsLoaded).copyWith(
+            favoriteStatus: FormzStatus.failure,
+          ),
+        );
+      } else if (state is SingleProductLoaded) {
+        emit(
+          (state as SingleProductLoaded).copyWith(
+            favoriteStatus: FormzStatus.failure,
+          ),
+        );
+      }
       return;
     }
 
     try {
-      emit(
-        (state as ProductsLoaded).copyWith(
-          favoriteStatus: FormzStatus.inProgress,
-        ),
-      );
-      List<ProductResponse> oldProducts = List.from(
-        (state as ProductsLoaded).products,
-      );
-      oldProducts = oldProducts.map((product) {
-        if (product.id == event.productId) {
-          return product.copyWith(isFavorite: !(product.isFavorite ?? false));
-        }
-        return product;
-      }).toList();
+      // Handle SingleProductLoaded state (from deep link)
+      if (state is SingleProductLoaded) {
+        final currentState = state as SingleProductLoaded;
+        emit(currentState.copyWith(favoriteStatus: FormzStatus.inProgress));
 
-      if (featureFlagService.isOfflineCachingEnabled) {
-        await localDbService.saveProducts(oldProducts);
+        final updatedProduct = currentState.product.copyWith(
+          isFavorite: !(currentState.product.isFavorite ?? false),
+        );
+
+        // Check if we have offline data or need to load from API
+        if (featureFlagService.isOfflineCachingEnabled) {
+          final localProducts = await localDbService.getAllProducts();
+
+          if (localProducts.isEmpty) {
+            // No offline data, fetch from API first
+            final result = await repository.getAllProducts();
+
+            if (result is RepoSuccess) {
+              // Update the specific product with favorite status
+              final allProducts = result.data.map((p) {
+                return p.id == event.productId ? updatedProduct : p;
+              }).toList();
+
+              // Save to local DB
+              await localDbService.saveProducts(allProducts);
+
+              // Emit ProductsLoaded state with all products
+              emit(
+                ProductsLoaded(
+                  products: allProducts,
+                  filteredProducts: allProducts,
+                ),
+              );
+
+              // Sync favorites and cart
+              add(GetAllFavoriteProducts());
+              add(GetCartProducts());
+              return;
+            } else if (result is RepoFailure) {
+              emit(currentState.copyWith(favoriteStatus: FormzStatus.failure));
+              return;
+            }
+          } else {
+            // Offline data exists, update it
+            final updatedList = localProducts.map((p) {
+              return p.id == event.productId ? updatedProduct : p;
+            }).toList();
+
+            await localDbService.saveProducts(updatedList);
+
+            // Emit ProductsLoaded state with all products
+            emit(
+              ProductsLoaded(
+                products: updatedList,
+                filteredProducts: updatedList,
+              ),
+            );
+
+            // Sync favorites and cart
+            add(GetAllFavoriteProducts());
+            add(GetCartProducts());
+            return;
+          }
+        } else {
+          // Offline caching not enabled, just update single product state
+          emit(
+            currentState.copyWith(
+              product: updatedProduct,
+              favoriteStatus: FormzStatus.success,
+            ),
+          );
+          return;
+        }
       }
 
-      emit(
-        (state as ProductsLoaded).copyWith(
-          products: oldProducts,
-          favoriteStatus: FormzStatus.success,
-        ),
-      );
-      add(GetAllFavoriteProducts());
+      // Handle ProductsLoaded state (existing code)
+      if (state is ProductsLoaded) {
+        emit(
+          (state as ProductsLoaded).copyWith(
+            favoriteStatus: FormzStatus.inProgress,
+          ),
+        );
+        List<ProductResponse> oldProducts = List.from(
+          (state as ProductsLoaded).products,
+        );
+
+        oldProducts = oldProducts.map((product) {
+          if (product.id == event.productId) {
+            return product.copyWith(isFavorite: !(product.isFavorite ?? false));
+          }
+          return product;
+        }).toList();
+
+        if (featureFlagService.isOfflineCachingEnabled) {
+          await localDbService.saveProducts(oldProducts);
+        }
+
+        emit(
+          (state as ProductsLoaded).copyWith(
+            products: oldProducts,
+            favoriteStatus: FormzStatus.success,
+          ),
+        );
+        add(GetAllFavoriteProducts());
+      }
     } catch (e) {
-      emit(
-        (state as ProductsLoaded).copyWith(favoriteStatus: FormzStatus.failure),
-      );
+      if (state is ProductsLoaded) {
+        emit(
+          (state as ProductsLoaded).copyWith(
+            favoriteStatus: FormzStatus.failure,
+          ),
+        );
+      } else if (state is SingleProductLoaded) {
+        emit(
+          (state as SingleProductLoaded).copyWith(
+            favoriteStatus: FormzStatus.failure,
+          ),
+        );
+      }
     }
   }
 
@@ -339,37 +439,139 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
   Future<void> _addToCart(AddToCart event, Emitter<ProductState> emit) async {
     if (!featureFlagService.isCartEnabled) {
-      emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
+      if (state is ProductsLoaded) {
+        emit(
+          (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure),
+        );
+      } else if (state is SingleProductLoaded) {
+        emit(
+          (state as SingleProductLoaded).copyWith(
+            cartStatus: FormzStatus.failure,
+          ),
+        );
+      }
       return;
     }
 
     try {
-      emit(
-        (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.inProgress),
-      );
-      List<ProductResponse> oldProducts = List.from(
-        (state as ProductsLoaded).products,
-      );
-      oldProducts = oldProducts.map((product) {
-        if (product.id == event.productId) {
-          return product.copyWith(isInCart: true, quantity: 1);
-        }
-        return product;
-      }).toList();
+      // Handle SingleProductLoaded state (from deep link)
+      if (state is SingleProductLoaded) {
+        final currentState = state as SingleProductLoaded;
+        emit(currentState.copyWith(cartStatus: FormzStatus.inProgress));
 
-      if (featureFlagService.isOfflineCachingEnabled) {
-        await localDbService.saveProducts(oldProducts);
+        final updatedProduct = currentState.product.copyWith(
+          isInCart: true,
+          quantity: 1,
+        );
+
+        // Check if we have offline data or need to load from API
+        if (featureFlagService.isOfflineCachingEnabled) {
+          final localProducts = await localDbService.getAllProducts();
+
+          if (localProducts.isEmpty) {
+            // No offline data, fetch from API first
+            final result = await repository.getAllProducts();
+
+            if (result is RepoSuccess) {
+              // Update the specific product with cart status
+              final allProducts = result.data.map((p) {
+                return p.id == event.productId ? updatedProduct : p;
+              }).toList();
+
+              // Save to local DB
+              await localDbService.saveProducts(allProducts);
+
+              // Emit ProductsLoaded state with all products
+              emit(
+                ProductsLoaded(
+                  products: allProducts,
+                  filteredProducts: allProducts,
+                ),
+              );
+
+              // Sync favorites and cart
+              add(GetAllFavoriteProducts());
+              add(GetCartProducts());
+              return;
+            } else if (result is RepoFailure) {
+              emit(currentState.copyWith(cartStatus: FormzStatus.failure));
+              return;
+            }
+          } else {
+            // Offline data exists, update it
+            final updatedList = localProducts.map((p) {
+              return p.id == event.productId ? updatedProduct : p;
+            }).toList();
+
+            await localDbService.saveProducts(updatedList);
+
+            // Emit ProductsLoaded state with all products
+            emit(
+              ProductsLoaded(
+                products: updatedList,
+                filteredProducts: updatedList,
+              ),
+            );
+
+            // Sync favorites and cart
+            add(GetAllFavoriteProducts());
+            add(GetCartProducts());
+            return;
+          }
+        } else {
+          // Offline caching not enabled, just update single product state
+          emit(
+            currentState.copyWith(
+              product: updatedProduct,
+              cartStatus: FormzStatus.success,
+            ),
+          );
+          return;
+        }
       }
 
-      emit(
-        (state as ProductsLoaded).copyWith(
-          products: oldProducts,
-          cartStatus: FormzStatus.success,
-        ),
-      );
-      add(GetCartProducts());
+      // Handle ProductsLoaded state (existing code)
+      if (state is ProductsLoaded) {
+        emit(
+          (state as ProductsLoaded).copyWith(
+            cartStatus: FormzStatus.inProgress,
+          ),
+        );
+        List<ProductResponse> oldProducts = List.from(
+          (state as ProductsLoaded).products,
+        );
+
+        oldProducts = oldProducts.map((product) {
+          if (product.id == event.productId) {
+            return product.copyWith(isInCart: true, quantity: 1);
+          }
+          return product;
+        }).toList();
+
+        if (featureFlagService.isOfflineCachingEnabled) {
+          await localDbService.saveProducts(oldProducts);
+        }
+
+        emit(
+          (state as ProductsLoaded).copyWith(
+            products: oldProducts,
+            cartStatus: FormzStatus.success,
+          ),
+        );
+        add(GetCartProducts());
+      }
     } catch (e) {
-      emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
+      if (state is ProductsLoaded) {
+        emit(
+          (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure),
+        );
+      } else if (state is SingleProductLoaded) {
+        emit(
+          (state as SingleProductLoaded).copyWith(
+            cartStatus: FormzStatus.failure,
+          ),
+        );
+      }
     }
   }
 
@@ -594,5 +796,105 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         clearFilterState: FormzStatus.success,
       ),
     );
+  }
+
+  Future<void> _onLoadSingleProduct(
+    LoadSingleProductEvent event,
+    Emitter<ProductState> emit,
+  ) async {
+    emit(const ProductLoading());
+
+    try {
+      ProductResponse? product;
+
+      // Check if products already loaded in memory
+      if (state is ProductsLoaded) {
+        final currentState = state as ProductsLoaded;
+        try {
+          product = currentState.products.firstWhere(
+            (p) => p.id == event.productId,
+          );
+          emit(SingleProductLoaded(product: product));
+          return;
+        } catch (_) {
+          // Product not found in current state, continue to next check
+        }
+      }
+
+      // Check local DB if offline caching enabled
+      if (featureFlagService.isOfflineCachingEnabled) {
+        final localProducts = await localDbService.getAllProducts();
+
+        if (localProducts.isNotEmpty) {
+          try {
+            product = localProducts.firstWhere((p) => p.id == event.productId);
+            emit(SingleProductLoaded(product: product));
+            return;
+          } catch (_) {
+            // Product not found in local DB, continue to API call
+          }
+        }
+      }
+
+      // Fetch single product from API
+      final result = await repository.getProductDetails(
+        productId: event.productId,
+      );
+
+      if (result is RepoSuccess) {
+        product = result.data;
+
+        // If offline caching is enabled, merge with local data for cart/favorite status
+        if (featureFlagService.isOfflineCachingEnabled) {
+          final localProducts = await localDbService.getAllProducts();
+
+          // Find if this product exists in local DB
+          try {
+            final existingProduct = localProducts.firstWhere(
+              (p) => p.id == product!.id,
+            );
+
+            // Preserve cart and favorite status from local DB
+            product = product?.copyWith(
+              isFavorite: existingProduct.isFavorite,
+              isInCart: existingProduct.isInCart,
+              quantity: existingProduct.quantity,
+            );
+          } catch (_) {
+            // Product doesn't exist in local DB, use API data as is
+          }
+
+          // Update or add product to local DB
+          final updatedProducts = List<ProductResponse>.from(localProducts);
+          final existingIndex = updatedProducts.indexWhere(
+            (p) => p.id == product!.id,
+          );
+
+          if (existingIndex != -1) {
+            updatedProducts[existingIndex] = product!;
+          } else {
+            updatedProducts.add(product!);
+          }
+
+          await localDbService.saveProducts(updatedProducts);
+        }
+
+        emit(SingleProductLoaded(product: product!));
+      } else if (result is RepoFailure) {
+        emit(
+          ProductError(
+            message: result.errorMessage,
+            statusCode: result.statusCode,
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        ProductError(
+          message: 'Failed to load product: ${e.toString()}',
+          statusCode: null,
+        ),
+      );
+    }
   }
 }

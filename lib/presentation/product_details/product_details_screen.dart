@@ -31,12 +31,16 @@ class ProductDetailScreen extends StatelessWidget {
               }
               return BlocBuilder<ProductBloc, ProductState>(
                 builder: (context, state) {
-                  if (state is ProductsLoaded) {
-                    bool isFavorite =
-                        ((state).products
-                            .firstWhere((element) => element.id == product.id)
-                            .isFavorite ??
-                        false);
+                  if (state is ProductsLoaded || state is SingleProductLoaded) {
+                    bool isFavorite = state is ProductsLoaded
+                        ? ((state).products
+                                  .firstWhere(
+                                    (element) => element.id == product.id,
+                                  )
+                                  .isFavorite ??
+                              false)
+                        : ((state as SingleProductLoaded).product.isFavorite ??
+                              false);
                     return IconButton(
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -121,48 +125,77 @@ class ProductDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: BlocBuilder<ProductBloc, ProductState>(
           builder: (context, state) {
-            if (state is ProductsLoaded) {
-              final currentProduct = state.products.firstWhere(
-                (element) => element.id == product.id,
-                orElse: () => product,
-              );
+            if (state is ProductsLoaded || state is SingleProductLoaded) {
+              final currentProduct = state is ProductsLoaded
+                  ? state.products.firstWhere(
+                      (element) => element.id == product.id,
+                      orElse: () => product,
+                    )
+                  : (state as SingleProductLoaded).product;
               bool isInCart = currentProduct.isInCart ?? false;
-              return ElevatedButton(
-                onPressed: () {
-                  if (isInCart) {
-                    GoRouter.of(context).goNamed(RouteNames.cart);
-                  } else {
-                    context.read<ProductBloc>().add(
-                      AddToCart(productId: product.id ?? 0),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: isInCart
-                      ? Colors.green
-                      : Theme.of(context).colorScheme.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (isInCart) ...[
-                      Icon(
-                        Icons.shopping_cart_outlined,
-                        size: 18,
-                        color: isInCart ? Colors.white : null,
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      if (isInCart) {
+                        GoRouter.of(context).goNamed(RouteNames.cart);
+                      } else {
+                        context.read<ProductBloc>().add(
+                          AddToCart(productId: product.id ?? 0),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: isInCart
+                          ? Colors.green
+                          : Theme.of(context).colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
                       ),
-                      const GapW(8),
-                    ],
-                    Text(
-                      isInCart ? 'Go to Cart' : 'Add to Cart',
-                      style: TextStyle(color: isInCart ? Colors.white : null),
                     ),
-                  ],
-                ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (isInCart) ...[
+                          Icon(
+                            Icons.shopping_cart_outlined,
+                            size: 18,
+                            color: isInCart ? Colors.white : null,
+                          ),
+                          const GapW(8),
+                        ],
+                        Text(
+                          isInCart ? 'Go to Cart' : 'Add to Cart',
+                          style: TextStyle(
+                            color: isInCart ? Colors.white : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const GapH(5),
+                  SizedBox(
+                    width: double.maxFinite,
+                    child: TextButton(
+                      onPressed: () {
+                        if (GoRouter.of(context).canPop()) {
+                          GoRouter.of(context).pop();
+                        } else {
+                          GoRouter.of(context).goNamed(RouteNames.product);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                      child: const Text('Continue Shopping'),
+                    ),
+                  ),
+                ],
               );
             } else {
               return const SizedBox.shrink();
