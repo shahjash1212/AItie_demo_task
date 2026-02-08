@@ -82,8 +82,6 @@ class FavoriteItemCard extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // Remove from Favorites Button
               Column(
                 children: [
                   IconButton(

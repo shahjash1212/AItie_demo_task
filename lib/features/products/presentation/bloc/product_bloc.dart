@@ -1,6 +1,6 @@
-// product_bloc.dart
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/domain/repositories/product_repository.dart';
+import 'package:aitie_demo/utils/feature_flag_service.dart';
 import 'package:aitie_demo/utils/formz_status.dart';
 import 'package:aitie_demo/utils/local_db_service.dart';
 import 'package:aitie_demo/utils/repo_result_class.dart';
@@ -13,9 +13,13 @@ part 'product_state.dart';
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final ProductRepository repository;
   final LocalDbService localDbService;
+  final FeatureFlagService featureFlagService;
 
-  ProductBloc({required this.repository, required this.localDbService})
-    : super(const ProductInitial()) {
+  ProductBloc({
+    required this.repository,
+    required this.localDbService,
+    required this.featureFlagService,
+  }) : super(const ProductInitial()) {
     on<LoadProductsEvent>(_onLoadProducts);
     on<AddToFavorite>(_addToFavorite);
     on<AddToCart>(_addToCart);
@@ -26,7 +30,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ClearCart>(_clearCart);
     on<ClearDatabaseEvent>(_clearDatabase);
     on<RefreshProductsEvent>(_refreshProducts);
-
     on<SearchProducts>(_onSearchProducts);
     on<FilterByCategory>(_onFilterByCategory);
     on<ClearFilters>(_onClearFilters);
@@ -39,25 +42,32 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(const ProductLoading());
 
     try {
-      final localProducts = await localDbService.getAllProducts();
+      final isOfflineCachingEnabled =
+          featureFlagService.isOfflineCachingEnabled;
 
-      if (localProducts.isNotEmpty) {
-        emit(
-          ProductsLoaded(
-            products: localProducts,
-            filteredProducts: localProducts,
-          ),
-        );
+      if (isOfflineCachingEnabled) {
+        final localProducts = await localDbService.getAllProducts();
 
-        add(GetAllFavoriteProducts());
-        add(GetCartProducts());
-        return;
+        if (localProducts.isNotEmpty) {
+          emit(
+            ProductsLoaded(
+              products: localProducts,
+              filteredProducts: localProducts,
+            ),
+          );
+
+          add(GetAllFavoriteProducts());
+          add(GetCartProducts());
+          return;
+        }
       }
 
       final result = await repository.getAllProducts();
 
       if (result is RepoSuccess) {
-        await localDbService.saveProducts(result.data);
+        if (isOfflineCachingEnabled) {
+          await localDbService.saveProducts(result.data);
+        }
         emit(
           ProductsLoaded(products: result.data, filteredProducts: result.data),
         );
@@ -83,7 +93,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     RefreshProductsEvent event,
     Emitter<ProductState> emit,
   ) async {
-    // Preserve current state data before refreshing
     final currentState = state is ProductsLoaded
         ? state as ProductsLoaded
         : null;
@@ -96,38 +105,37 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       final result = await repository.getAllProducts();
 
       if (result is RepoSuccess) {
-        final localProducts = await localDbService.getAllProducts();
+        List<ProductResponse> mergedProducts = result.data;
 
-        // Create a map of existing products by ID for quick lookup
-        final Map<int, ProductResponse> existingProductsMap = {
-          for (var product in localProducts) product.id!: product,
-        };
+        if (featureFlagService.isOfflineCachingEnabled) {
+          final localProducts = await localDbService.getAllProducts();
 
-        // Merge: Update existing products and add new ones
-        final List<ProductResponse> mergedProducts = [];
-        for (var newProduct in result.data) {
-          final existingProduct = existingProductsMap[newProduct.id];
+          final Map<int, ProductResponse> existingProductsMap = {
+            for (var product in localProducts) product.id!: product,
+          };
 
-          if (existingProduct != null) {
-            // Product exists - update base data but preserve user data
-            mergedProducts.add(
-              newProduct.copyWith(
-                isFavorite: existingProduct.isFavorite,
-                isInCart: existingProduct.isInCart,
-                quantity: existingProduct.quantity,
-              ),
-            );
-          } else {
-            mergedProducts.add(newProduct);
+          mergedProducts = [];
+          for (var newProduct in result.data) {
+            final existingProduct = existingProductsMap[newProduct.id];
+
+            if (existingProduct != null) {
+              mergedProducts.add(
+                newProduct.copyWith(
+                  isFavorite: existingProduct.isFavorite,
+                  isInCart: existingProduct.isInCart,
+                  quantity: existingProduct.quantity,
+                ),
+              );
+            } else {
+              mergedProducts.add(newProduct);
+            }
           }
+
+          await localDbService.saveProducts(mergedProducts);
         }
 
-        await localDbService.saveProducts(mergedProducts);
-
-        // Apply previous filters if they existed
         List<ProductResponse> filteredProducts = mergedProducts;
 
-        // Apply category filter
         if (previousSelectedCategory != null &&
             previousSelectedCategory != 'All') {
           filteredProducts = filteredProducts
@@ -135,7 +143,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
               .toList();
         }
 
-        // Apply search filter
         if (previousSearchQuery != null && previousSearchQuery.isNotEmpty) {
           filteredProducts = filteredProducts
               .where(
@@ -169,8 +176,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             selectedCategory: previousSelectedCategory ?? 'All',
           ),
         );
-
-        // Refresh favorite and cart lists
       } else if (result is RepoFailure) {
         emit(
           ProductError(
@@ -211,6 +216,13 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     AddToFavorite event,
     Emitter<ProductState> emit,
   ) async {
+    if (!featureFlagService.isFavoritesEnabled) {
+      emit(
+        (state as ProductsLoaded).copyWith(favoriteStatus: FormzStatus.failure),
+      );
+      return;
+    }
+
     try {
       emit(
         (state as ProductsLoaded).copyWith(
@@ -227,8 +239,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         return product;
       }).toList();
 
-      // Update database
-      await localDbService.saveProducts(oldProducts);
+      if (featureFlagService.isOfflineCachingEnabled) {
+        await localDbService.saveProducts(oldProducts);
+      }
 
       emit(
         (state as ProductsLoaded).copyWith(
@@ -248,6 +261,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     GetAllFavoriteProducts event,
     Emitter<ProductState> emit,
   ) async {
+    if (!featureFlagService.isFavoritesEnabled) {
+      emit(
+        (state as ProductsLoaded).copyWith(
+          favoriteProducts: [],
+          favoriteProductStatus: FormzStatus.success,
+        ),
+      );
+      return;
+    }
+
     try {
       emit(
         (state as ProductsLoaded).copyWith(
@@ -281,6 +304,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     GetCartProducts event,
     Emitter<ProductState> emit,
   ) async {
+    if (!featureFlagService.isCartEnabled) {
+      emit(
+        (state as ProductsLoaded).copyWith(
+          cartProducts: [],
+          cartStatus: FormzStatus.success,
+        ),
+      );
+      return;
+    }
+
     try {
       emit(
         (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.inProgress),
@@ -305,6 +338,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   }
 
   Future<void> _addToCart(AddToCart event, Emitter<ProductState> emit) async {
+    if (!featureFlagService.isCartEnabled) {
+      emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
+      return;
+    }
+
     try {
       emit(
         (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.inProgress),
@@ -319,8 +357,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         return product;
       }).toList();
 
-      // Update database
-      await localDbService.saveProducts(oldProducts);
+      if (featureFlagService.isOfflineCachingEnabled) {
+        await localDbService.saveProducts(oldProducts);
+      }
 
       emit(
         (state as ProductsLoaded).copyWith(
@@ -338,6 +377,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     RemoveFromCart event,
     Emitter<ProductState> emit,
   ) async {
+    if (!featureFlagService.isCartEnabled) {
+      emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
+      return;
+    }
+
     try {
       emit(
         (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.inProgress),
@@ -352,8 +396,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         return product;
       }).toList();
 
-      // Update database
-      await localDbService.saveProducts(oldProducts);
+      if (featureFlagService.isOfflineCachingEnabled) {
+        await localDbService.saveProducts(oldProducts);
+      }
 
       emit(
         (state as ProductsLoaded).copyWith(
@@ -371,6 +416,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     UpdateCartQuantity event,
     Emitter<ProductState> emit,
   ) async {
+    if (!featureFlagService.isCartEnabled) {
+      emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
+      return;
+    }
+
     try {
       emit(
         (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.inProgress),
@@ -385,8 +435,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         return product;
       }).toList();
 
-      // Update database
-      await localDbService.saveProducts(oldProducts);
+      if (featureFlagService.isOfflineCachingEnabled) {
+        await localDbService.saveProducts(oldProducts);
+      }
 
       emit(
         (state as ProductsLoaded).copyWith(
@@ -401,6 +452,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   }
 
   Future<void> _clearCart(ClearCart event, Emitter<ProductState> emit) async {
+    if (!featureFlagService.isCartEnabled) {
+      emit((state as ProductsLoaded).copyWith(cartStatus: FormzStatus.failure));
+      return;
+    }
+
     try {
       emit(
         (state as ProductsLoaded).copyWith(cartStatus: FormzStatus.inProgress),
@@ -412,8 +468,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         return product.copyWith(isInCart: false, quantity: 0);
       }).toList();
 
-      // Update database
-      await localDbService.saveProducts(oldProducts);
+      if (featureFlagService.isOfflineCachingEnabled) {
+        await localDbService.saveProducts(oldProducts);
+      }
 
       emit(
         (state as ProductsLoaded).copyWith(
@@ -440,14 +497,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
     List<ProductResponse> filtered = currentState.products;
 
-    /// Category filter
     if (currentState.selectedCategory != 'All') {
       filtered = filtered
           .where((product) => product.category == currentState.selectedCategory)
           .toList();
     }
 
-    /// Search query filter
     if (query.isNotEmpty) {
       filtered = filtered
           .where(

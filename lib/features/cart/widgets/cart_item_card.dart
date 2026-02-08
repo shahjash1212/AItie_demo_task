@@ -53,8 +53,10 @@ class CartItemCard extends StatelessWidget {
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
+                  alignment: Alignment.topRight,
                   icon: const Icon(Icons.cancel, size: 20),
                   onPressed: () {
                     context.read<ProductBloc>().add(
@@ -109,10 +111,7 @@ class QuantityControl extends StatelessWidget {
                         ),
                       );
                     } else {
-                      showErrorSnackBar(
-                        context,
-                        'Quantity cannot be less than 1',
-                      );
+                      showSnackBar(context, 'Quantity cannot be less than 1');
                     }
                   },
                 ),
@@ -135,7 +134,7 @@ class QuantityControl extends StatelessWidget {
             ),
           );
         } else {
-          return SizedBox.shrink();
+          return const SizedBox.shrink();
         }
       },
     );

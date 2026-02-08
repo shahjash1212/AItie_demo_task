@@ -1,5 +1,7 @@
 import 'package:aitie_demo/features/home/widgets/bottom_nav_item.dart';
+import 'package:aitie_demo/features/settings_debug_menu/cubit/feature_flag_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -26,7 +28,10 @@ class HomeScreen extends StatelessWidget {
                   selectedIndex: navigationShell.currentIndex,
                   icon: Icons.storefront_outlined,
                   label: 'Products',
-                  onTap: () => navigationShell.goBranch(0),
+                  onTap: () {
+                    context.read<FeatureFlagCubit>().resetTapCount();
+                    navigationShell.goBranch(0);
+                  },
                 ),
 
                 BottomNavItem(
@@ -35,7 +40,10 @@ class HomeScreen extends StatelessWidget {
                   icon: Icons.favorite,
                   label: 'Favorite',
                   activeColor: Colors.red,
-                  onTap: () => navigationShell.goBranch(1),
+                  onTap: () {
+                    context.read<FeatureFlagCubit>().incrementTapCount(context);
+                    navigationShell.goBranch(1);
+                  },
                 ),
 
                 BottomNavItem(
@@ -44,7 +52,10 @@ class HomeScreen extends StatelessWidget {
                   icon: Icons.shopping_cart_outlined,
                   label: 'My Cart',
                   activeColor: Colors.green,
-                  onTap: () => navigationShell.goBranch(2),
+                  onTap: () {
+                    context.read<FeatureFlagCubit>().resetTapCount();
+                    navigationShell.goBranch(2);
+                  },
                 ),
               ],
             ),

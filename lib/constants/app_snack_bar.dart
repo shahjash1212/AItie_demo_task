@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-void showErrorSnackBar(BuildContext context, String description) {
+void showSnackBar(BuildContext context, String description) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(errorSnackBar(description: description));
+    ..showSnackBar(snackBar(description: description));
 }
 
-SnackBar errorSnackBar({required String description}) {
+SnackBar snackBar({required String description}) {
   return SnackBar(
     elevation: 5,
     behavior: SnackBarBehavior.floating,

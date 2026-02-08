@@ -7,8 +7,8 @@ import 'package:aitie_demo/features/products/presentation/pages/widgets/category
 import 'package:aitie_demo/features/products/presentation/pages/widgets/product_error_widget.dart';
 import 'package:aitie_demo/features/products/presentation/pages/widgets/product_search.dart';
 import 'package:aitie_demo/features/products/presentation/pages/widgets/products_list.dart';
+import 'package:aitie_demo/features/settings_debug_menu/cubit/feature_flag_cubit.dart';
 import 'package:aitie_demo/routing/route_names.dart';
-import 'package:aitie_demo/utils/formz_status.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,30 +41,37 @@ class _ProductScreenState extends State<ProductScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: BlocBuilder<ProductBloc, ProductState>(
-              builder: (context, state) {
-                if (state is ProductsLoaded) {
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      AppIconButton(
-                        onPressed: () =>
-                            GoRouter.of(context).goNamed(RouteNames.cart),
-                        icon: Icons.shopping_cart_outlined,
-                      ),
-                      if (state.cartProducts.isNotEmpty)
-                        Positioned(
-                          right: 5,
-                          top: 5,
-                          child: CircleAvatar(
-                            radius: 3,
-                            backgroundColor: Colors.red,
-                          ),
-                        ),
-                    ],
-                  );
+            child: BlocBuilder<FeatureFlagCubit, FeatureFlagState>(
+              builder: (context, featureState) {
+                if (!featureState.isCartEnabled) {
+                  return const SizedBox.shrink();
                 }
-                return const SizedBox.shrink();
+                return BlocBuilder<ProductBloc, ProductState>(
+                  builder: (context, state) {
+                    if (state is ProductsLoaded) {
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          AppIconButton(
+                            onPressed: () =>
+                                GoRouter.of(context).goNamed(RouteNames.cart),
+                            icon: Icons.shopping_cart_outlined,
+                          ),
+                          if (state.cartProducts.isNotEmpty)
+                            Positioned(
+                              right: 5,
+                              top: 5,
+                              child: CircleAvatar(
+                                radius: 3,
+                                backgroundColor: Colors.red,
+                              ),
+                            ),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                );
               },
             ),
           ),
@@ -98,7 +105,7 @@ class _ProductScreenState extends State<ProductScreen> {
 
                 if (!isConnected) {
                   if (context.mounted) {
-                    showErrorSnackBar(context, 'No internet connection');
+                    showSnackBar(context, 'No internet connection');
                   }
                   return;
                 }
@@ -130,4 +137,3 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 }
-

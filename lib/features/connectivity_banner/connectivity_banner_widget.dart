@@ -76,6 +76,7 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 8,
+                  color: Colors.white,
                 ),
               ),
             ),

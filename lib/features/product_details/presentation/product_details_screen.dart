@@ -2,6 +2,7 @@ import 'package:aitie_demo/constants/app_network_image.dart';
 import 'package:aitie_demo/constants/gap.dart';
 import 'package:aitie_demo/features/products/data/models/product_response.dart';
 import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
+import 'package:aitie_demo/features/settings_debug_menu/cubit/feature_flag_cubit.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,27 +24,34 @@ class ProductDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(product.title ?? ''),
         actions: [
-          BlocBuilder<ProductBloc, ProductState>(
-            builder: (context, state) {
-              if (state is ProductsLoaded) {
-                bool isFavorite =
-                    ((state).products
-                        .firstWhere((element) => element.id == product.id)
-                        .isFavorite ??
-                    false);
-                return IconButton(
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : null,
-                  ),
-                  onPressed: () {
-                    context.read<ProductBloc>().add(
-                      AddToFavorite(productId: product.id ?? 0),
-                    );
-                  },
-                );
+          BlocBuilder<FeatureFlagCubit, FeatureFlagState>(
+            builder: (context, featureState) {
+              if (!featureState.isCartEnabled) {
+                return const SizedBox.shrink();
               }
-              return const SizedBox.shrink();
+              return BlocBuilder<ProductBloc, ProductState>(
+                builder: (context, state) {
+                  if (state is ProductsLoaded) {
+                    bool isFavorite =
+                        ((state).products
+                            .firstWhere((element) => element.id == product.id)
+                            .isFavorite ??
+                        false);
+                    return IconButton(
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : null,
+                      ),
+                      onPressed: () {
+                        context.read<ProductBloc>().add(
+                          AddToFavorite(productId: product.id ?? 0),
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              );
             },
           ),
         ],
@@ -142,10 +150,17 @@ class ProductDetailScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (isInCart) ...[
-                      const Icon(Icons.shopping_cart_outlined, size: 18),
+                      Icon(
+                        Icons.shopping_cart_outlined,
+                        size: 18,
+                        color: isInCart ? Colors.white : null,
+                      ),
                       const GapW(8),
                     ],
-                    Text(isInCart ? 'Go to Cart' : 'Add to Cart'),
+                    Text(
+                      isInCart ? 'Go to Cart' : 'Add to Cart',
+                      style: TextStyle(color: isInCart ? Colors.white : null),
+                    ),
                   ],
                 ),
               );

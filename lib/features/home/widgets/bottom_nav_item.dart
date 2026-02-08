@@ -49,10 +49,8 @@ class BottomNavItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              /// Icon
-              Icon(icon, size: 22, color: iconColor),
 
-              /// Slide-in label
+              Icon(icon, size: 22, color: iconColor),
               AnimatedSize(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOut,
