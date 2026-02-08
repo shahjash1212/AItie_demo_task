@@ -1,8 +1,8 @@
-import 'package:aitie_demo/features/connectivity_banner/connectivity_banner_widget.dart';
-import 'package:aitie_demo/features/products/data/data_sources/product_remote_data_source.dart';
-import 'package:aitie_demo/features/products/data/repositories/product_repository_impl.dart';
-import 'package:aitie_demo/features/products/presentation/bloc/product_bloc.dart';
-import 'package:aitie_demo/features/settings_debug_menu/cubit/feature_flag_cubit.dart';
+import 'package:aitie_demo/data/product/data_sources/product_remote_data_source.dart';
+import 'package:aitie_demo/data/product/repositories/product_repository_impl.dart';
+import 'package:aitie_demo/presentation/connectivity_banner/connectivity_banner_widget.dart';
+import 'package:aitie_demo/presentation/products/bloc/product_bloc.dart';
+import 'package:aitie_demo/presentation/settings_debug_menu/cubit/feature_flag_cubit.dart';
 import 'package:aitie_demo/routing/app_router.dart';
 import 'package:aitie_demo/utils/app_theme.dart';
 import 'package:aitie_demo/utils/feature_flag_service.dart';

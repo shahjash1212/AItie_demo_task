@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:aitie_demo/features/products/data/models/product_response.dart';
+import 'package:aitie_demo/data/product/models/product_response.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 

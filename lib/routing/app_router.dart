@@ -1,10 +1,10 @@
-import 'package:aitie_demo/features/cart/cart_screen.dart';
-import 'package:aitie_demo/features/errors/error_screen.dart';
-import 'package:aitie_demo/features/favorite/favorite_screen.dart';
-import 'package:aitie_demo/features/home/home_screen.dart';
-import 'package:aitie_demo/features/product_details/presentation/product_details_screen.dart';
-import 'package:aitie_demo/features/products/data/models/product_response.dart';
-import 'package:aitie_demo/features/products/presentation/pages/product_screen.dart';
+import 'package:aitie_demo/presentation/cart/cart_screen.dart';
+import 'package:aitie_demo/presentation/errors/error_screen.dart';
+import 'package:aitie_demo/presentation/favorite/favorite_screen.dart';
+import 'package:aitie_demo/presentation/home/home_screen.dart';
+import 'package:aitie_demo/presentation/product_details/presentation/product_details_screen.dart';
+import 'package:aitie_demo/data/product/models/product_response.dart';
+import 'package:aitie_demo/presentation/products/pages/product_screen.dart';
 import 'package:aitie_demo/routing/route_names.dart';
 import 'package:go_router/go_router.dart';
 
