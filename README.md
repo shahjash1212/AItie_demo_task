@@ -155,3 +155,10 @@ lib/
 - The app supports offline functionality with local caching
 - Network connectivity is monitored and communicated to users
 - All API calls are handled with proper error management
+
+## Debug Dev Feature
+
+- To enable it click on the Favorite button for 5 times continusly and then the Debug Pop up will be visible.
+- I this Feature User can turn off Favorite , Cart and Offilne Cache Features.
+
+
